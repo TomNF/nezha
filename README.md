@@ -51,15 +51,19 @@ npm run validate:cfa
 
 Repo: https://github.com/TomNF/nezha
 
-GitHub Pages phục vụ trực tiếp từ nhánh `main`, thư mục gốc. Mỗi lần push lên `main`, GitHub Pages tự build lại site.
+GitHub Pages phục vụ từ nhánh `gh-pages` (chỉ chứa bản build tĩnh). Sau khi sửa app, deploy bằng:
+
+```bash
+npm run deploy:pages
+```
+
+Lệnh này build `dist/` rồi cập nhật nhánh `gh-pages`. Thư mục `dist/` không commit vào `main`.
 
 Build local để kiểm tra bản tĩnh:
 
 ```bash
 npm run build:pwa
 ```
-
-Thư mục `dist/` chỉ dùng local, không commit.
 
 ## Ghi chú
 

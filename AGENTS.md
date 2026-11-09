@@ -36,7 +36,7 @@ Then follow these rules:
 - Entry point: `index.html`, app logic: `app.js`, styles: `styles.css`.
 - Data is stored in localStorage under `nezha.v1`; legacy local data migrates automatically on first load.
 - Server is `server.js` on port `4173`.
-- GitHub Pages serves the repository root from `main`; push `main` to deploy.
+- GitHub Pages serves the `gh-pages` branch; deploy with `npm run deploy:pages` after app changes.
 
 ## PWA rules
 
