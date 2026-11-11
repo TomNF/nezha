@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nezha-pwa-v1';
+const CACHE_VERSION = 'nezha-pwa-v3';
 
 const APP_SHELL = [
   './',
@@ -9,6 +9,7 @@ const APP_SHELL = [
   './curriculum.js',
   './content-data.js',
   './curriculum-ext.js',
+  './ielts-curriculum.js',
   './exams.js',
   './exams-ecba.js',
   './exams-cfa.js',
