@@ -37,9 +37,27 @@ window.NEZHA_EXAMS = (() => {
     if (!raw || typeof raw !== 'object' || !raw.id) return null;
     if (!Array.isArray(raw.sections) || !Array.isArray(raw.questions)) return null;
     const sections = raw.sections.map((section) => ({
+      ...section,
       id: String(section.id),
       title: String(section.title || section.id),
-      minutes: Math.max(1, Number(section.minutes) || 1)
+      minutes: Math.max(1, Number(section.minutes) || 1),
+      type: String(section.type || 'mcq'),
+      description: String(section.description || ''),
+      instructions: String(section.instructions || ''),
+      audioSrc: String(section.audioSrc || ''),
+      transcriptHtml: String(section.transcriptHtml || ''),
+      passageHtml: String(section.passageHtml || ''),
+      tasks: Array.isArray(section.tasks)
+        ? section.tasks.map((task) => ({
+          ...task,
+          id: String(task.id || ''),
+          title: String(task.title || ''),
+          promptHtml: String(task.promptHtml || ''),
+          cueCardHtml: String(task.cueCardHtml || ''),
+          minWords: Math.max(0, Number(task.minWords) || 0),
+          recommendedMinutes: Math.max(1, Number(task.recommendedMinutes) || 1)
+        }))
+        : []
     }));
     const questions = raw.questions.filter((question) => {
       return question

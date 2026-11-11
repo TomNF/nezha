@@ -74,15 +74,26 @@
   const CFA_ERROR_LIMIT = 200;
 
   function examLesson(examSet) {
+    const taskCount = examSet.sections.reduce((sum, section) => {
+      return sum + (Array.isArray(section.tasks) ? section.tasks.length : 0);
+    }, 0);
+    const isTaskExam = taskCount > 0;
+    const objectives = isTaskExam
+      ? [
+        `Complete ${taskCount} timed task${taskCount === 1 ? '' : 's'}`,
+        'Save your response and review it against the rubric',
+        'Choose one language or structure goal for the next attempt'
+      ]
+      : [
+        `Complete ${examSet.questions.length} questions under timed conditions`,
+        'Review every incorrect answer by topic',
+        'Use the result to choose the next study block'
+      ];
     return {
       id: examSet.lessonId,
       title: examSet.title,
       estimatedMinutes: Number(examSet.durationMinutes) || examSet.sections.reduce((sum, section) => sum + Number(section.minutes || 0), 0),
-      objectives: [
-        `Complete ${examSet.questions.length} questions under timed conditions`,
-        'Review every incorrect answer by topic',
-        'Use the result to choose the next study block'
-      ],
+      objectives,
       contentHtml: '',
       keyTerms: [],
       flashcards: [],
@@ -90,7 +101,7 @@
       feynman: '',
       examId: examSet.id,
       examFormNumber: Number(examSet.formNumber) || 0,
-      examQuestionCount: examSet.questions.length,
+      examQuestionCount: examSet.questions.length || taskCount,
       isExam: true
     };
   }
@@ -352,6 +363,31 @@
     return result;
   }
 
+  function normalizeTextMap(raw) {
+    const result = {};
+    if (!raw || typeof raw !== 'object') return result;
+    Object.entries(raw).forEach(([key, value]) => {
+      if (value == null) return;
+      result[String(key)] = String(value).slice(0, 50000);
+    });
+    return result;
+  }
+
+  function normalizeRubricMap(raw) {
+    const result = {};
+    if (!raw || typeof raw !== 'object') return result;
+    Object.entries(raw).forEach(([key, value]) => {
+      const score = Number(value);
+      if (Number.isInteger(score) && score >= 1 && score <= 9) result[String(key)] = score;
+    });
+    return result;
+  }
+
+  function countWords(value) {
+    const text = String(value || '').trim();
+    return text ? text.split(/\s+/).length : 0;
+  }
+
   function normalizeSectionResults(raw) {
     const result = {};
     if (!raw || typeof raw !== 'object') return result;
@@ -549,7 +585,10 @@
                 total: Math.max(0, Number(topic.total) || 0)
               }))
               : [],
-            answers: normalizeAnswerMap(attempt.answers)
+            answers: normalizeAnswerMap(attempt.answers),
+            responses: normalizeTextMap(attempt.responses),
+            rubric: normalizeRubricMap(attempt.rubric),
+            selfAssessed: Boolean(attempt.selfAssessed)
           }))
         : [];
 
@@ -561,6 +600,8 @@
           currentQuestionIndex: clampNumber(record.active.currentQuestionIndex, 0, 1000, 0),
           remainingSeconds: Math.max(0, Number(record.active.remainingSeconds) || 0),
           answers: normalizeAnswerMap(record.active.answers),
+          responses: normalizeTextMap(record.active.responses),
+          rubric: normalizeRubricMap(record.active.rubric),
           flagged: normalizeBoolMap(record.active.flagged),
           submittedSections: normalizeBoolMap(record.active.submittedSections),
           sectionResults: normalizeSectionResults(record.active.sectionResults),
@@ -759,7 +800,21 @@
     return exam.questions.filter((question) => question.sectionId === sectionId);
   }
 
+  function examSectionById(exam, sectionId) {
+    return exam.sections.find((section) => section.id === sectionId) || null;
+  }
+
+  function examSectionTotal(exam, section) {
+    if (section && Array.isArray(section.tasks) && section.tasks.length) return section.tasks.length;
+    return examSectionQuestions(exam, section ? section.id : '').length;
+  }
+
   function examSectionAnswered(exam, active, sectionId) {
+    const section = examSectionById(exam, sectionId);
+    if (section && Array.isArray(section.tasks) && section.tasks.length) {
+      const responses = active.responses || {};
+      return section.tasks.filter((task) => String(responses[task.id] || '').trim()).length;
+    }
     const questions = examSectionQuestions(exam, sectionId);
     return questions.filter((question) => active.answers[question.id] != null).length;
   }
@@ -795,6 +850,8 @@
       currentQuestionIndex: 0,
       remainingSeconds: Math.max(1, Number(firstSection.minutes) || 1) * 60,
       answers: {},
+      responses: {},
+      rubric: {},
       flagged: {},
       submittedSections: {},
       sectionResults: {},
@@ -816,6 +873,18 @@
     if (!section || active.submittedSections[section.id]) return;
     const questions = examSectionQuestions(exam, section.id);
     const answered = examSectionAnswered(exam, active, section.id);
+
+    if (Array.isArray(section.tasks) && section.tasks.length) {
+      if (!automatic && !window.confirm('Nộp bài? Bạn vẫn có thể xem lại và tự chấm sau khi nộp.')) return;
+      active.sectionResults[section.id] = {
+        correct: 0,
+        total: 0,
+        submittedAt: Date.now()
+      };
+      active.submittedSections[section.id] = true;
+      finalizeExam(examId, active);
+      return;
+    }
 
     if (!automatic && answered < questions.length) {
       if (!window.confirm(`Còn ${questions.length - answered} câu chưa trả lời. Nộp phần này?`)) return;
@@ -844,6 +913,48 @@
   function finalizeExam(examId, active) {
     const exam = EXAM_BY_ID.get(examId);
     if (!exam || !active) return;
+
+    const isTaskExam = exam.questions.length === 0
+      && exam.sections.some((section) => Array.isArray(section.tasks) && section.tasks.length);
+    if (isTaskExam) {
+      const rubricScores = Object.values(active.rubric || {})
+        .map(Number)
+        .filter((score) => Number.isInteger(score) && score >= 1 && score <= 9);
+      const percent = rubricScores.length
+        ? Math.round((rubricScores.reduce((sum, score) => sum + score, 0) / rubricScores.length / 9) * 100)
+        : 0;
+      const attempt = {
+        id: `attempt-${Date.now()}`,
+        at: Date.now(),
+        totalCorrect: 0,
+        totalQuestions: 0,
+        percent,
+        sections: exam.sections.map((section) => ({
+          id: section.id,
+          title: section.title,
+          correct: 0,
+          total: 0
+        })),
+        topics: [],
+        answers: {},
+        responses: { ...(active.responses || {}) },
+        rubric: { ...(active.rubric || {}) },
+        selfAssessed: rubricScores.length > 0
+      };
+      const record = ensureExamRecord(examId);
+      record.attempts.unshift(attempt);
+      record.active = null;
+      const progress = ensureProgress(examId);
+      progress.completed = true;
+      progress.completedAt = Date.now();
+      progress.lastViewedAt = Date.now();
+      const studiedMinutes = Math.max(1, Math.round((Date.now() - active.startedAt) / 60000));
+      addSession({ type: 'exam', minutes: studiedMinutes, lessonId: examId });
+      saveState();
+      render();
+      showToast(`Đã lưu ${exam.title}. Tự chấm rubric trong phần xem lại.`, 'success');
+      return;
+    }
 
     const sections = exam.sections.map((section) => {
       const questions = examSectionQuestions(exam, section.id);
@@ -938,7 +1049,7 @@
       element.classList.toggle('danger', remaining <= 60);
     });
     document.querySelectorAll(`[data-exam-answered="${examId}"]`).forEach((element) => {
-      element.textContent = `${examSectionAnswered(exam, active, section.id)}/${examSectionQuestions(exam, section.id).length}`;
+      element.textContent = `${examSectionAnswered(exam, active, section.id)}/${examSectionTotal(exam, section)}`;
     });
   }
 
@@ -2959,15 +3070,21 @@
     if (!record.attempts.length) {
       return '<p class="muted small">Chưa có lần làm bài nào. Làm full mock đầu tiên để có điểm theo topic.</p>';
     }
+    const isTaskExam = exam.questions.length === 0;
     return record.attempts.map((attempt) => {
-      const passed = attempt.percent >= exam.targetPercent;
+      const passed = attempt.percent >= exam.targetPercent && (!isTaskExam || attempt.selfAssessed);
+      const summary = isTaskExam
+        ? (attempt.selfAssessed
+          ? `Tự đánh giá ${attempt.percent}% · mục tiêu luyện ${exam.targetPercent}%`
+          : 'Chưa tự chấm rubric')
+        : `${attempt.totalCorrect}/${attempt.totalQuestions} câu · mục tiêu luyện ${exam.targetPercent}%`;
       return `<div class="split-row">
         <div class="split-row-copy">
-          <strong>${escapeHtml(formatDate(attempt.at))} · ${attempt.percent}%</strong>
-          <span>${attempt.totalCorrect}/${attempt.totalQuestions} câu · mục tiêu luyện ${exam.targetPercent}%</span>
+          <strong>${escapeHtml(formatDate(attempt.at))} · ${isTaskExam && !attempt.selfAssessed ? 'Chưa chấm' : `${attempt.percent}%`}</strong>
+          <span>${escapeHtml(summary)}</span>
         </div>
         <div class="button-row">
-          <span class="badge ${passed ? 'success' : 'warning'}">${passed ? 'Đạt mục tiêu' : 'Cần ôn'}</span>
+          <span class="badge ${passed ? 'success' : 'warning'}">${isTaskExam ? (attempt.selfAssessed ? (passed ? 'Đạt mục tiêu' : 'Cần ôn') : 'Chờ tự chấm') : (passed ? 'Đạt mục tiêu' : 'Cần ôn')}</span>
           <button class="button small" type="button" data-action="exam-review" data-exam_id="${escapeHtml(exam.id)}" data-attempt_id="${escapeHtml(attempt.id)}">Xem lại</button>
         </div>
       </div>`;
@@ -2977,10 +3094,16 @@
   function renderExamIntro(exam) {
     const track = TRACK_BY_ID[exam.trackId];
     const record = getExamRecord(exam.id);
+    const taskCount = exam.sections.reduce((sum, section) => {
+      return sum + (Array.isArray(section.tasks) ? section.tasks.length : 0);
+    }, 0);
+    const isTaskExam = taskCount > 0;
     const sections = exam.sections.map((section) => {
       const questions = examSectionQuestions(exam, section.id);
+      const sectionTasks = Array.isArray(section.tasks) ? section.tasks.length : 0;
+      const itemLabel = sectionTasks ? `${sectionTasks} task` : `${questions.length} câu`;
       return `<div class="split-row">
-        <div class="split-row-copy"><strong>${escapeHtml(section.title)}</strong><span>${questions.length} câu · ${section.minutes} phút</span></div>
+        <div class="split-row-copy"><strong>${escapeHtml(section.title)}</strong><span>${itemLabel} · ${section.minutes} phút</span></div>
         <span class="badge">${section.minutes} phút</span>
       </div>`;
     }).join('');
@@ -2989,13 +3112,13 @@
       <div>
         <a class="small" href="#/track/${exam.trackId}">← ${escapeHtml(track ? track.shortTitle : exam.trackId)} · Full Mock Exams</a>
         <h2>${escapeHtml(exam.title)}</h2>
-        <p>${exam.questions.length} câu · ${formatExamMinutes(exam.durationMinutes)} · mục tiêu luyện ${exam.targetPercent}%</p>
+        <p>${isTaskExam ? `${taskCount} task` : `${exam.questions.length} câu`} · ${formatExamMinutes(exam.durationMinutes)} · mục tiêu luyện ${exam.targetPercent}%</p>
       </div>
       <span class="badge primary">${exam.year || 'Full mock'}</span>
     </div>
 
     <div class="grid grid-4">
-      <div class="card stat-card"><p class="stat-label">Câu hỏi</p><p class="stat-value">${exam.questions.length}</p><p class="stat-note">Unique trong đề này</p></div>
+      <div class="card stat-card"><p class="stat-label">${isTaskExam ? 'Task' : 'Câu hỏi'}</p><p class="stat-value">${isTaskExam ? taskCount : exam.questions.length}</p><p class="stat-note">${isTaskExam ? 'Bài tự luận / nói' : 'Unique trong đề này'}</p></div>
       <div class="card stat-card"><p class="stat-label">Thời gian</p><p class="stat-value">${formatExamMinutes(exam.durationMinutes)}</p><p class="stat-note">${exam.sections.length} phần thi</p></div>
       <div class="card stat-card"><p class="stat-label">Mục tiêu luyện</p><p class="stat-value">${exam.targetPercent}%</p><p class="stat-note">Không phải điểm pass chính thức</p></div>
       <div class="card stat-card"><p class="stat-label">Đã làm</p><p class="stat-value">${record.attempts.length}</p><p class="stat-note">Số lần nộp bài</p></div>
@@ -3012,9 +3135,9 @@
         </div>
       </div>
       <div class="card card-pad">
-        <div class="card-header"><div><h3>Lịch sử làm bài</h3><p>Điểm và breakdown theo topic.</p></div><span class="badge">${record.attempts.length}</span></div>
+        <div class="card-header"><div><h3>Lịch sử làm bài</h3><p>${isTaskExam ? 'Bài đã lưu và điểm tự chấm.' : 'Điểm và breakdown theo topic.'}</p></div><span class="badge">${record.attempts.length}</span></div>
         <div class="split-list">${renderExamHistory(exam, record)}</div>
-        <p class="faint small mt-12">Câu hỏi là bản gốc bám blueprint, không phải đề thi chính thức. Dùng điểm theo topic để chọn bài ôn tiếp theo.</p>
+        <p class="faint small mt-12">${isTaskExam ? 'Writing/Speaking chỉ tự chấm theo rubric; không phải điểm IELTS chính thức.' : 'Câu hỏi là bản gốc bám blueprint, không phải đề thi chính thức. Dùng điểm theo topic để chọn bài ôn tiếp theo.'}</p>
       </div>
     </div>`;
   }
@@ -3041,7 +3164,7 @@
     <div class="card card-pad exam-break-card">
       <div class="exam-break-mark">Break</div>
       <h3>${escapeHtml(nextSection ? nextSection.title : 'Phiên tiếp theo')}</h3>
-      <p>${nextSection ? `${examSectionQuestions(exam, nextSection.id).length} câu · ${nextSection.minutes} phút` : 'Hoàn tất bài thi.'}</p>
+      <p>${nextSection ? `${Array.isArray(nextSection.tasks) && nextSection.tasks.length ? `${nextSection.tasks.length} task` : `${examSectionQuestions(exam, nextSection.id).length} câu`} · ${nextSection.minutes} phút` : 'Hoàn tất bài thi.'}</p>
       <div class="split-list mt-16">${completed}</div>
       <div class="button-row mt-16">
         <button class="button primary" type="button" data-action="exam-next-section" data-exam_id="${escapeHtml(exam.id)}">Bắt đầu ${escapeHtml(nextSection ? nextSection.title : 'phần tiếp theo')}</button>
@@ -3053,6 +3176,8 @@
   function renderExamActive(exam, active) {
     if (active.awaitingBreak) return renderExamBreak(exam, active);
     const section = exam.sections[active.currentSectionIndex];
+    if (section && section.type === 'writing') return renderWritingExamActive(exam, active, section);
+    if (section && section.type === 'speaking') return renderSpeakingExamActive(exam, active, section);
     const questions = examSectionQuestions(exam, section.id);
     const currentIndex = Math.min(Math.max(0, Number(active.currentQuestionIndex) || 0), Math.max(0, questions.length - 1));
     const question = questions[currentIndex];
@@ -3062,6 +3187,7 @@
     const selected = active.answers[question.id];
     const flagged = Boolean(active.flagged[question.id]);
     const answered = examSectionAnswered(exam, active, section.id);
+    const resources = renderExamSectionResources(section);
 
     const options = question.options.map((option, optionIndex) => {
       return `<label class="exam-option ${selected === optionIndex ? 'selected' : ''}">
@@ -3086,6 +3212,8 @@
       </div>
       <div class="exam-clock" data-exam-timer="${escapeHtml(exam.id)}">${formatTime(active.remainingSeconds)}</div>
     </div>
+
+    ${resources}
 
     <div class="exam-layout">
       <div class="exam-main">
@@ -3123,7 +3251,163 @@
     </div>`;
   }
 
+  function renderExamSectionResources(section, review) {
+    if (!section) return '';
+    const blocks = [];
+    if (section.instructions) {
+      blocks.push(`<p class="faint small exam-resource-note">${escapeHtml(section.instructions)}</p>`);
+    }
+    if (section.audioSrc) {
+      blocks.push(`<div class="exam-audio-wrap">
+        <audio class="exam-audio" controls preload="metadata" src="${escapeHtml(section.audioSrc)}"></audio>
+        <p class="faint small">Audio TTS · bản gốc luyện tập, không phải đề thi chính thức.</p>
+      </div>`);
+    }
+    if (section.passageHtml) {
+      blocks.push(`<details class="exam-resource" open>
+        <summary>Passage</summary>
+        <div class="exam-prose">${section.passageHtml}</div>
+      </details>`);
+    }
+    if (section.transcriptHtml) {
+      blocks.push(review
+        ? `<details class="exam-resource" open>
+          <summary>Transcript</summary>
+          <div class="exam-prose">${section.transcriptHtml}</div>
+        </details>`
+        : '<p class="faint small">Transcript sẽ hiện sau khi nộp phần này.</p>');
+    }
+    if (!blocks.length) return '';
+    return `<div class="card card-pad exam-resource-card mt-16">${blocks.join('')}</div>`;
+  }
+
+  function renderWritingExamActive(exam, active, section) {
+    const tasks = Array.isArray(section.tasks) ? section.tasks : [];
+    const responses = active.responses || {};
+    const answered = tasks.filter((task) => String(responses[task.id] || '').trim()).length;
+    const cards = tasks.map((task, index) => {
+      const value = String(responses[task.id] || '');
+      return `<div class="card card-pad exam-task-card mt-16">
+        <div class="card-header">
+          <div><h3>Task ${index + 1} · ${escapeHtml(task.title)}</h3><p>${task.minWords ? `Tối thiểu ${task.minWords} từ` : 'Không giới hạn từ'} · gợi ý ${task.recommendedMinutes} phút</p></div>
+          <span class="badge" data-ielts-wordcount="${escapeHtml(task.id)}">${countWords(value)} từ</span>
+        </div>
+        <div class="exam-prompt">${task.promptHtml || escapeHtml(task.prompt || '')}</div>
+        <textarea class="textarea exam-writing-area" data-ielts-response="${escapeHtml(task.id)}" data-exam-id="${escapeHtml(exam.id)}" placeholder="Viết câu trả lời ở đây...">${escapeHtml(value)}</textarea>
+      </div>`;
+    }).join('');
+
+    return `<div class="page-head">
+      <div>
+        <a class="small" href="#/track/${exam.trackId}">← ${escapeHtml(exam.title)}</a>
+        <h2>${escapeHtml(section.title)}</h2>
+        <p>${answered}/${tasks.length} task đã có nội dung · ${section.minutes} phút</p>
+      </div>
+      <div class="exam-clock" data-exam-timer="${escapeHtml(exam.id)}">${formatTime(active.remainingSeconds)}</div>
+    </div>
+
+    <div class="card card-pad exam-task-intro">
+      <p><strong>Đề tự luyện gốc.</strong> ${escapeHtml(section.instructions || 'Viết câu trả lời cho từng task. Bài làm được lưu trên máy này.')}</p>
+      <p class="faint small">Hết giờ hệ thống tự nộp. Sau khi nộp, bạn tự chấm 4 tiêu chí; đây không phải điểm IELTS chính thức.</p>
+    </div>
+    ${cards}
+    <div class="button-row mt-16">
+      <button class="button primary" type="button" data-action="submit-exam-section" data-exam_id="${escapeHtml(exam.id)}">Nộp bài Writing</button>
+      <a class="button small" href="#/track/${exam.trackId}">Lưu & thoát</a>
+    </div>`;
+  }
+
+  function renderSpeakingExamActive(exam, active, section) {
+    const tasks = Array.isArray(section.tasks) ? section.tasks : [];
+    const responses = active.responses || {};
+    const answered = tasks.filter((task) => String(responses[task.id] || '').trim()).length;
+    const cards = tasks.map((task, index) => {
+      const value = String(responses[task.id] || '');
+      return `<div class="card card-pad exam-task-card mt-16">
+        <div class="card-header">
+          <div><h3>Part ${index + 1} · ${escapeHtml(task.title)}</h3><p>${task.recommendedMinutes} phút</p></div>
+          <span class="badge">Speaking</span>
+        </div>
+        <div class="exam-prompt">${task.promptHtml || escapeHtml(task.prompt || '')}</div>
+        ${task.cueCardHtml ? `<div class="exam-cue-card">${task.cueCardHtml}</div>` : ''}
+        <label class="field-label" for="speaking-notes-${escapeHtml(task.id)}">Ghi chú / dàn ý</label>
+        <textarea class="textarea exam-notes-area" id="speaking-notes-${escapeHtml(task.id)}" data-ielts-response="${escapeHtml(task.id)}" data-exam-id="${escapeHtml(exam.id)}" placeholder="Ghi keywords, ví dụ, hướng triển khai...">${escapeHtml(value)}</textarea>
+      </div>`;
+    }).join('');
+
+    return `<div class="page-head">
+      <div>
+        <a class="small" href="#/track/${exam.trackId}">← ${escapeHtml(exam.title)}</a>
+        <h2>${escapeHtml(section.title)}</h2>
+        <p>${answered}/${tasks.length} part đã có ghi chú · ${section.minutes} phút</p>
+      </div>
+      <div class="exam-clock" data-exam-timer="${escapeHtml(exam.id)}">${formatTime(active.remainingSeconds)}</div>
+    </div>
+
+    <div class="card card-pad exam-task-intro">
+      <p><strong>Đề tự luyện gốc.</strong> ${escapeHtml(section.instructions || 'Ghi âm câu trả lời bằng điện thoại, sau đó tự chấm 4 tiêu chí Speaking.')}</p>
+      <p class="faint small">Hết giờ hệ thống tự nộp. Phần ghi chú được lưu trên máy này; không có chấm điểm tự động.</p>
+    </div>
+    ${cards}
+    <div class="button-row mt-16">
+      <button class="button primary" type="button" data-action="submit-exam-section" data-exam_id="${escapeHtml(exam.id)}">Nộp bài Speaking</button>
+      <a class="button small" href="#/track/${exam.trackId}">Lưu & thoát</a>
+    </div>`;
+  }
+
+  function renderTaskExamReview(exam, attempt) {
+    const isWriting = exam.examType === 'IELTS_WRITING'
+      || exam.sections.some((section) => section.type === 'writing');
+    const criteria = isWriting
+      ? ['Task Response', 'Coherence and Cohesion', 'Lexical Resource', 'Grammatical Range and Accuracy']
+      : ['Fluency and Coherence', 'Lexical Resource', 'Grammatical Range and Accuracy', 'Pronunciation'];
+    const tasks = exam.sections.flatMap((section) => (Array.isArray(section.tasks) ? section.tasks : []));
+    const responses = attempt.responses || {};
+    const cards = tasks.map((task, index) => {
+      const value = String(responses[task.id] || '');
+      const label = isWriting ? `Task ${index + 1}` : `Part ${index + 1}`;
+      return `<div class="card card-pad mt-16 exam-review-task">
+        <div class="card-header"><div><h3>${label} · ${escapeHtml(task.title)}</h3><p>${isWriting ? `${countWords(value)} từ` : 'Ghi chú / dàn ý'}</p></div><span class="badge">${isWriting ? (task.minWords ? (countWords(value) >= task.minWords ? 'Đủ từ' : 'Chưa đủ từ') : `${countWords(value)} từ`) : 'Speaking'}</span></div>
+        <div class="exam-response">${value ? escapeHtml(value).replace(/\n/g, '<br>') : '<span class="muted">Chưa có câu trả lời.</span>'}</div>
+      </div>`;
+    }).join('');
+    const scores = criteria
+      .map((criterion) => Number(attempt.rubric && attempt.rubric[criterion]))
+      .filter((score) => Number.isInteger(score) && score >= 1 && score <= 9);
+    const average = scores.length
+      ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1)
+      : '—';
+    const rubricRows = criteria.map((criterion) => {
+      const selected = attempt.rubric && attempt.rubric[criterion] ? Number(attempt.rubric[criterion]) : '';
+      const options = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        .map((score) => `<option value="${score}" ${selected === score ? 'selected' : ''}>${score}</option>`)
+        .join('');
+      return `<label class="exam-rubric-row">
+        <span>${escapeHtml(criterion)}</span>
+        <select data-ielts-rubric data-exam_id="${escapeHtml(exam.id)}" data-attempt_id="${escapeHtml(attempt.id)}" data-criterion="${escapeHtml(criterion)}">
+          <option value="">Chưa chấm</option>
+          ${options}
+        </select>
+      </label>`;
+    }).join('');
+
+    return `<div class="page-head">
+      <div>
+        <button class="small button ghost" type="button" data-action="exam-review-back" data-exam_id="${escapeHtml(exam.id)}">← Quay lại đề</button>
+        <h2>Xem lại ${escapeHtml(exam.title)}</h2>
+        <p>${escapeHtml(formatDate(attempt.at))} · ${isWriting ? 'Writing' : 'Speaking'} · tự chấm ${average}/9</p>
+      </div>
+      <span class="badge ${scores.length ? 'primary' : 'warning'}">${scores.length ? 'Đã tự chấm' : 'Chưa tự chấm'}</span>
+    </div>
+    ${cards}
+    <div class="card card-pad mt-16">
+      <div class="card-header"><div><h3>Tự chấm rubric</h3><p>Chọn 1–9 cho từng tiêu chí. Đây là tự đánh giá, không phải điểm IELTS chính thức.</p></div><span class="badge">${average}/9</span></div>
+      <div class="exam-rubric-grid">${rubricRows}</div>
+    </div>`;
+  }
+
   function renderExamReview(exam, attempt) {
+    if (exam.questions.length === 0) return renderTaskExamReview(exam, attempt);
     const sections = exam.sections.map((section) => {
       const questions = examSectionQuestions(exam, section.id);
       const rows = questions.map((question, index) => {
@@ -3146,6 +3430,7 @@
       const result = attempt.sections.find((item) => item.id === section.id) || { correct: 0, total: questions.length };
       return `<div class="card card-pad mt-16">
         <div class="card-header"><div><h3>${escapeHtml(section.title)}</h3><p>${result.correct}/${result.total} câu đúng</p></div><span class="badge ${result.correct === result.total ? 'success' : 'primary'}">${result.total ? Math.round((result.correct / result.total) * 100) : 0}%</span></div>
+        ${renderExamSectionResources(section, true)}
         <div class="exam-review-list">${rows}</div>
       </div>`;
     }).join('');
@@ -4082,6 +4367,20 @@
   }
 
   function handleInput(event) {
+    const responseField = event.target.closest('[data-ielts-response]');
+    if (responseField) {
+      const examId = responseField.dataset.examId;
+      const taskId = responseField.dataset.ieltsResponse;
+      const active = getActiveExam(examId);
+      if (!active || !taskId) return;
+      active.responses = active.responses || {};
+      active.responses[taskId] = responseField.value;
+      const counter = document.querySelector(`[data-ielts-wordcount="${taskId}"]`);
+      if (counter) counter.textContent = `${countWords(responseField.value)} từ`;
+      scheduleSave();
+      return;
+    }
+
     const formulaSearch = event.target.closest('[data-cfa-formula-search]');
     if (formulaSearch) {
       cfaFormulaView.query = formulaSearch.value;
@@ -4125,6 +4424,32 @@
 
     if (target.matches('[data-cfa-error-filter]')) {
       cfaErrorView.status = ['open', 'resolved', 'all'].includes(target.value) ? target.value : 'open';
+      render();
+      return;
+    }
+
+    if (target.matches('[data-ielts-rubric]')) {
+      const examId = target.dataset.exam_id;
+      const attemptId = target.dataset.attempt_id;
+      const criterion = target.dataset.criterion;
+      const record = ensureExamRecord(examId);
+      const attempt = record.attempts.find((item) => item.id === attemptId);
+      if (!attempt || !criterion) return;
+      const score = Number(target.value);
+      attempt.rubric = attempt.rubric || {};
+      if (Number.isInteger(score) && score >= 1 && score <= 9) {
+        attempt.rubric[criterion] = score;
+      } else {
+        delete attempt.rubric[criterion];
+      }
+      const scores = Object.values(attempt.rubric)
+        .map(Number)
+        .filter((value) => Number.isInteger(value) && value >= 1 && value <= 9);
+      attempt.percent = scores.length
+        ? Math.round((scores.reduce((sum, value) => sum + value, 0) / scores.length / 9) * 100)
+        : 0;
+      attempt.selfAssessed = scores.length > 0;
+      saveState();
       render();
       return;
     }

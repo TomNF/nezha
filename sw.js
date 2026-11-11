@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nezha-pwa-v3';
+const CACHE_VERSION = 'nezha-pwa-v4';
 
 const APP_SHELL = [
   './',
@@ -13,6 +13,11 @@ const APP_SHELL = [
   './exams.js',
   './exams-ecba.js',
   './exams-cfa.js',
+  './exams-ielts.js',
+  './assets/ielts/listening/ielts-listening-mock-1-part-1.m4a',
+  './assets/ielts/listening/ielts-listening-mock-1-part-2.m4a',
+  './assets/ielts/listening/ielts-listening-mock-1-part-3.m4a',
+  './assets/ielts/listening/ielts-listening-mock-1-part-4.m4a',
   './cfa-assessments.js',
   './cfa-assessments-phase0.js',
   './cfa-assessments-phase1a.js',
