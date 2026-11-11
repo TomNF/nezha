@@ -14,6 +14,7 @@ const files = [
   'curriculum.js',
   'content-data.js',
   'curriculum-ext.js',
+  'ielts-curriculum.js',
   'exams.js',
   'exams-ecba.js',
   'exams-cfa.js',

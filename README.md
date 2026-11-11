@@ -1,6 +1,6 @@
 # NeZha
 
-Ứng dụng học tập local-first cho BA, CFA Level I và Fintech. Dữ liệu lưu trên máy, không cần tài khoản.
+Ứng dụng học tập local-first cho BA, CFA Level I, IELTS Academic và Fintech. Dữ liệu lưu trên máy, không cần tài khoản.
 
 ## Dùng trên iPhone (PWA)
 

@@ -2,10 +2,10 @@
   "name": "nezha",
   "version": "1.0.0",
   "private": true,
-  "description": "Local-first learning and progress tracker for BA, CFA Level I, securities, wealth management, IT, and fintech.",
+  "description": "Local-first learning and progress tracker for BA, CFA Level I, IELTS Academic, securities, wealth management, IT, and fintech.",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check app.js && node --check curriculum.js && node --check content-data.js && node --check curriculum-ext.js && node --check exams.js && node --check exams-ecba.js && node --check exams-cfa.js && node --check cfa-assessments.js && node --check cfa-assessments-phase0.js && node --check cfa-assessments-phase1a.js && node --check cfa-blueprint.js && node --check cfa-formulas.js && node --check cfa-foundations.js && node --check cfa-quant.js && node --check server.js && node --check scripts/validate-cfa-phase0.mjs && node --check scripts/validate-cfa-phase1.mjs",
+    "check": "node --check app.js && node --check curriculum.js && node --check content-data.js && node --check curriculum-ext.js && node --check ielts-curriculum.js && node --check exams.js && node --check exams-ecba.js && node --check exams-cfa.js && node --check cfa-assessments.js && node --check cfa-assessments-phase0.js && node --check cfa-assessments-phase1a.js && node --check cfa-blueprint.js && node --check cfa-formulas.js && node --check cfa-foundations.js && node --check cfa-quant.js && node --check server.js && node --check scripts/validate-cfa-phase0.mjs && node --check scripts/validate-cfa-phase1.mjs",
     "validate:cfa": "node scripts/validate-cfa-phase0.mjs && node scripts/validate-cfa-phase1.mjs",
     "validate:cfa:phase1": "node scripts/validate-cfa-phase1.mjs",
     "build:pwa": "node scripts/build-pwa.mjs",

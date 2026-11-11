@@ -1467,7 +1467,7 @@
         <div class="card mini-stat">
           <p class="stat-label">Bài đã hoàn thành</p>
           <p class="stat-value">${overall.completed}/${overall.lessons}</p>
-          <p class="stat-note">Trên cả 4 lộ trình</p>
+          <p class="stat-note">Trên cả ${TRACKS.length} lộ trình</p>
         </div>
         <div class="card mini-stat">
           <p class="stat-label">Thẻ đến hạn</p>
@@ -1491,7 +1491,7 @@
       <div class="card stat-card">
         <p class="stat-label">Mastery tổng</p>
         <p class="stat-value">${overall.mastery}%</p>
-        <p class="stat-note">Trung bình 4 lộ trình</p>
+        <p class="stat-note">Trung bình ${TRACKS.length} lộ trình</p>
       </div>
       <div class="card stat-card">
         <p class="stat-label">Độ sẵn sàng</p>
@@ -1513,7 +1513,7 @@
       ${plan.length ? plan.map(renderPlanItem).join('') : '<p class="muted small">Không còn việc bắt buộc. Có thể ôn thêm hoặc nghỉ ngơi.</p>'}
     </div>
 
-    <div class="section-head"><div><h3>Bốn lộ trình</h3><p>BA là lộ trình chính; IT, CFA và Fintech là bổ trợ.</p></div></div>
+    <div class="section-head"><div><h3>${TRACKS.length} lộ trình</h3><p>BA là lộ trình chính; các lộ trình còn lại là bổ trợ.</p></div></div>
     <div class="track-grid">${TRACKS.map(renderTrackCard).join('')}</div>
 
     <div class="section-head"><div><h3>Hoạt động gần đây</h3><p>Những gì đã được ghi nhận trên máy này.</p></div></div>
@@ -1575,12 +1575,12 @@
     return `<div class="page-head">
       <div>
         <h2>Lộ trình</h2>
-        <p>BA là lộ trình chính với ECBA full coverage và wealth specialization; IT, CFA Level I và Fintech là bổ trợ, không bắt buộc.</p>
+        <p>BA là lộ trình chính với ECBA full coverage và wealth specialization; các lộ trình còn lại là bổ trợ, không bắt buộc.</p>
       </div>
-      <span class="badge primary">4 lộ trình</span>
+      <span class="badge primary">${TRACKS.length} lộ trình</span>
     </div>
     <div class="track-grid">${TRACKS.map(renderTrackCard).join('')}</div>
-    <p class="faint small mt-16">BA luôn mở. IT, CFA và Fintech có thể học trước, học song song, hoặc bỏ qua.</p>`;
+    <p class="faint small mt-16">BA luôn mở. Các lộ trình bổ trợ có thể học trước, học song song, hoặc bỏ qua.</p>`;
   }
 
   function cfaDiagnosticQuestions() {
