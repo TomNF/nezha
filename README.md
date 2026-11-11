@@ -45,6 +45,13 @@ Yêu cầu: Node.js 18+.
 ```bash
 npm run check
 npm run validate:cfa
+npm run validate:ielts
+```
+
+Tạo lại audio Listening IELTS bằng macOS:
+
+```bash
+npm run build:ielts-audio
 ```
 
 ## Deploy GitHub Pages
@@ -64,6 +71,12 @@ Build local để kiểm tra bản tĩnh:
 ```bash
 npm run build:pwa
 ```
+
+## IELTS Academic
+
+- Lộ trình có 24 bài core, 72 quiz, 72 flashcards và 4 full mock Listening, Reading, Writing, Speaking.
+- Listening dùng audio TTS gốc; Writing/Speaking tự chấm theo rubric, không phải điểm IELTS chính thức.
+- Nội dung là bản gốc luyện tập, không phải đề thi hoặc tài liệu chính thức của IELTS/Cambridge/British Council/IDP.
 
 ## Ghi chú
 

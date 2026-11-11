@@ -22,11 +22,25 @@ Then follow these rules:
 - Run `npm run check` and `npm run validate:cfa` after changes.
 - Stop after the requested phase and report acceptance results.
 
+## IELTS roadmap
+
+Read `docs/ielts-plan.md` before changing IELTS content or mock behavior.
+
+- Keep IELTS lessons in `ielts-curriculum.js` and mock exams in `exams-ielts.js`.
+- Do not copy official IELTS, Cambridge, British Council, or IDP material.
+- Listening/Reading are MCQ approximations; Writing/Speaking are self-assessed with rubrics.
+- Keep the exam engine generic; task sections use `questions: []` plus `section.tasks`.
+- Listening audio is generated TTS; do not describe it as an official recording.
+- Do not claim an official IELTS band, pass guarantee, or affiliation.
+- Run `npm run check`, `npm run validate:ielts`, and `npm run validate:cfa` after changes.
+
 ## Commands
 
 - Start: `npm start`
 - Syntax check: `npm run check`
 - CFA data validation: `npm run validate:cfa`
+- IELTS data validation: `npm run validate:ielts`
+- IELTS audio generation: `npm run build:ielts-audio`
 - PWA deploy build: `npm run build:pwa`
 
 ## Project shape

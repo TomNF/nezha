@@ -13,7 +13,8 @@ const mimeTypes = {
   '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.m4a': 'audio/mp4'
 };
 
 const server = http.createServer((req, res) => {

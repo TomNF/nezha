@@ -1679,6 +1679,211 @@ a:hover {
   background: var(--danger-soft);
 }
 
+.exam-resource-card {
+  display: grid;
+  gap: 12px;
+}
+
+.exam-resource {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.exam-resource summary {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.exam-prose {
+  max-height: 460px;
+  overflow: auto;
+  padding: 14px;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.exam-prose h3,
+.exam-prose h4 {
+  margin: 18px 0 8px;
+  font-size: 14px;
+}
+
+.exam-prose h3:first-child,
+.exam-prose h4:first-child {
+  margin-top: 0;
+}
+
+.exam-prose p {
+  margin: 0 0 10px;
+}
+
+.exam-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.exam-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 11.5px;
+}
+
+.exam-prose th,
+.exam-prose td {
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.exam-prose th {
+  background: var(--surface-2);
+}
+
+.exam-audio-wrap {
+  display: grid;
+  gap: 6px;
+}
+
+.exam-audio {
+  width: 100%;
+}
+
+.exam-resource-note {
+  margin: 0;
+}
+
+.exam-task-intro p {
+  margin: 0;
+}
+
+.exam-task-intro p + p {
+  margin-top: 6px;
+}
+
+.exam-prompt {
+  padding: 14px;
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.exam-prompt p {
+  margin: 0 0 8px;
+}
+
+.exam-prompt p:last-child,
+.exam-prompt ul:last-child,
+.exam-prompt table:last-child {
+  margin-bottom: 0;
+}
+
+.exam-prompt table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 11.5px;
+}
+
+.exam-prompt th,
+.exam-prompt td {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.exam-prompt th {
+  background: var(--surface);
+}
+
+.exam-writing-area {
+  min-height: 340px;
+  margin-top: 14px;
+  font-family: var(--font-sans);
+  line-height: 1.7;
+}
+
+.exam-notes-area {
+  min-height: 140px;
+  margin-top: 8px;
+  line-height: 1.65;
+}
+
+.exam-cue-card {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--primary-soft);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.exam-cue-card ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.exam-rubric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.exam-rubric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.exam-rubric-row select {
+  min-width: 92px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.exam-response {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  line-height: 1.7;
+  white-space: normal;
+}
+
+@media (max-width: 720px) {
+  .exam-rubric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exam-rubric-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .exam-rubric-row select {
+    width: 100%;
+  }
+}
+
 .cfa-entry-card {
   display: grid;
   gap: 14px;
