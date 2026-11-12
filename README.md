@@ -1,6 +1,6 @@
 # NeZha
 
-Ứng dụng học tập local-first cho BA, CFA Level I, IELTS Academic và Fintech. Dữ liệu lưu trên máy, không cần tài khoản.
+Ứng dụng học tập local-first cho ECBA, CFA Level I, IELTS Academic, Securities Theory (SRTC), ISTQB Foundation và Fintech. Dữ liệu lưu trên máy, không cần tài khoản.
 
 ## Dùng trên iPhone (PWA)
 
@@ -46,6 +46,9 @@ Yêu cầu: Node.js 18+.
 npm run check
 npm run validate:cfa
 npm run validate:ielts
+npm run validate:ecba-scenarios
+npm run validate:securities
+npm run validate:istqb
 ```
 
 Tạo lại audio Listening IELTS bằng macOS:
@@ -77,6 +80,24 @@ npm run build:pwa
 - Lộ trình có 24 bài core, 72 quiz, 72 flashcards và 4 full mock Listening, Reading, Writing, Speaking.
 - Listening dùng audio TTS gốc; Writing/Speaking tự chấm theo rubric, không phải điểm IELTS chính thức.
 - Nội dung là bản gốc luyện tập, không phải đề thi hoặc tài liệu chính thức của IELTS/Cambridge/British Council/IDP.
+
+## ECBA
+
+- Lộ trình chính dùng internal id `ba`, hiển thị là ECBA.
+- Core path gồm orientation, 9 domain, applied BA labs, final review, 3 full mock và 20-question scenario drill.
+- Wealth modules là optional, không tính vào core readiness.
+- Không phải tài liệu hay đề thi chính thức của IIBA; IIBA không công bố pass mark cố định, 75% chỉ là mục tiêu luyện tập.
+
+## Securities Theory (SRTC)
+
+- Track bổ trợ, `affectsOverall: false`, gồm 8 topic core, 3 practice mock 40 câu/60 phút và module trading-app optional.
+- Nội dung là bản gốc, không liên kết với SRTC/UBCKNN, không cấp chứng chỉ và không cam kết đỗ.
+
+## ISTQB Foundation (CTFL)
+
+- Track bổ trợ, `affectsOverall: false`, gồm 6 chapter core, 3 practice mock 40 câu/60 phút và module trading-app QA optional.
+- Official CTFL pass mark là 26/40 (65%); app dùng 70% làm ngưỡng readiness nội bộ.
+- Nội dung là bản gốc, không phải tài liệu hay đề thi chính thức của ISTQB.
 
 ## Ghi chú
 

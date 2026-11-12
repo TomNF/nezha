@@ -34,12 +34,46 @@ Read `docs/ielts-plan.md` before changing IELTS content or mock behavior.
 - Do not claim an official IELTS band, pass guarantee, or affiliation.
 - Run `npm run check`, `npm run validate:ielts`, and `npm run validate:cfa` after changes.
 
+## ECBA roadmap
+
+Read `docs/ecba-architecture.md` before changing ECBA content, mocks, or the BA track.
+
+- Keep the internal track id `ba`; the display title/short title is `ECBA`.
+- Keep the core path exam-ready: orientation, nine domains, applied BA labs, final review, three full mocks, and the 20-question scenario drill.
+- Wealth modules `ba-mod-5` through `ba-mod-8` are optional and must stay after the exam module.
+- Do not copy IIBA content or claim IIBA affiliation, endorsement, or a pass guarantee. IIBA does not publish a fixed ECBA pass mark; use 75% as a practice target only.
+- Run `npm run check` and `npm run validate:ecba-scenarios` after changes.
+
+## Securities track
+
+Read `docs/securities-plan.md` before changing Securities content or mocks.
+
+- Map the eight core modules to the public SRTC basic topics: market overview, instruments, primary market, secondary market, firms, funds, clearing/settlement, and disclosure.
+- Keep the track optional, `prerequisiteId: null`, and `affectsOverall: false`.
+- `sec-mod-10` is an optional trading-app bridge; keep it after the exam module.
+- Do not claim SRTC/UBCKNN affiliation, official course status, certificate issuance, or a pass guarantee. Verify fees, schedules, and assessment rules with SRTC.
+- Run `npm run check` and `npm run validate:securities` after changes.
+
+## ISTQB track
+
+Read `docs/istqb-plan.md` before changing ISTQB content or mocks.
+
+- Use CTFL v4.0/syllabus v4.0.1 scope: six chapters and three 40-question, 60-minute practice mocks.
+- The official pass mark is 26/40 (65%); use 70% as the internal readiness buffer.
+- Keep the track optional, `prerequisiteId: null`, and `affectsOverall: false`.
+- `istqb-mod-8` is an optional trading-app QA bridge; keep it after the exam module.
+- Do not copy ISTQB syllabus or exam material, and do not claim ISTQB affiliation, endorsement, or a pass guarantee.
+- Run `npm run check` and `npm run validate:istqb` after changes.
+
 ## Commands
 
 - Start: `npm start`
 - Syntax check: `npm run check`
 - CFA data validation: `npm run validate:cfa`
 - IELTS data validation: `npm run validate:ielts`
+- ECBA scenario validation: `npm run validate:ecba-scenarios`
+- Securities data validation: `npm run validate:securities`
+- ISTQB data validation: `npm run validate:istqb`
 - IELTS audio generation: `npm run build:ielts-audio`
 - PWA deploy build: `npm run build:pwa`
 

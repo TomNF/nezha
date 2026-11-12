@@ -121,11 +121,18 @@
       if (!module) {
         module = {
           id: `${trackId}-exam-module`,
-          title: 'Full Mock Exams',
-          description: 'Timed full-length practice exams with section timing, review, and topic breakdown.',
+          title: track.examModuleTitle || 'Full Mock Exams',
+          description: 'Timed practice exams with section timing, review, and topic breakdown.',
           lessons: []
         };
-        track.modules.push(module);
+        const optionalIndex = track.modules.findIndex((item) => item && item.optional);
+        if (optionalIndex >= 0) {
+          track.modules.splice(optionalIndex, 0, module);
+        } else {
+          track.modules.push(module);
+        }
+      } else if (track.examModuleTitle) {
+        module.title = track.examModuleTitle;
       }
       const existing = new Set(module.lessons.map((lesson) => lesson.id));
       sets.forEach((examSet) => {
@@ -1068,32 +1075,55 @@
     let completed = 0;
     let quizTotal = 0;
     let quizCorrect = 0;
-    let masterySum = 0;
+    let coreMasterySum = 0;
     let cards = 0;
     let reviewed = 0;
+    let coreLessons = 0;
+    let coreCompleted = 0;
+    let coreQuizTotal = 0;
+    let coreQuizCorrect = 0;
+    let coreCards = 0;
+    let coreReviewed = 0;
 
     track.modules.forEach((module) => {
+      const isOptional = Boolean(module.optional);
       module.lessons.forEach((lesson) => {
         lessons += 1;
         const progress = getProgress(lesson.id);
         if (progress.completed) completed += 1;
         quizTotal += Number(progress.quizTotal) || 0;
         quizCorrect += Number(progress.quizCorrect) || 0;
-        masterySum += lessonMastery(lesson.id);
+
+        if (!isOptional) {
+          coreLessons += 1;
+          if (progress.completed) coreCompleted += 1;
+          coreQuizTotal += Number(progress.quizTotal) || 0;
+          coreQuizCorrect += Number(progress.quizCorrect) || 0;
+          coreMasterySum += lessonMastery(lesson.id);
+        }
 
         lesson.flashcards.forEach((flashcard) => {
           cards += 1;
           const card = state.cards[flashcard.id];
-          if (card && card.lastReviewedAt) reviewed += 1;
+          if (card && card.lastReviewedAt) {
+            reviewed += 1;
+            if (!isOptional) coreReviewed += 1;
+          }
+          if (!isOptional) coreCards += 1;
         });
       });
     });
 
-    const mastery = lessons ? Math.round(masterySum / lessons) : 0;
+    const mastery = coreLessons ? Math.round(coreMasterySum / coreLessons) : 0;
     const quizAccuracy = quizTotal ? quizCorrect / quizTotal : 0;
     const completion = lessons ? completed / lessons : 0;
     const coverage = cards ? reviewed / cards : 0;
-    const readiness = Math.round((quizAccuracy * 0.5 + completion * 0.3 + coverage * 0.2) * 100);
+    const coreQuizAccuracy = coreQuizTotal ? coreQuizCorrect / coreQuizTotal : 0;
+    const coreCompletion = coreLessons ? coreCompleted / coreLessons : 0;
+    const coreCoverage = coreCards ? coreReviewed / coreCards : 0;
+    const readiness = coreLessons
+      ? Math.round((coreQuizAccuracy * 0.5 + coreCompletion * 0.3 + coreCoverage * 0.2) * 100)
+      : 0;
 
     return {
       lessons,
@@ -1106,8 +1136,111 @@
       reviewed,
       coverage,
       mastery,
-      readiness
+      readiness,
+      coreLessons,
+      coreCompleted,
+      coreQuizTotal,
+      coreQuizCorrect,
+      coreQuizAccuracy,
+      coreCompletion,
+      coreCards,
+      coreReviewed,
+      coreCoverage
     };
+  }
+
+  function getExamPrepStats(track) {
+    const stats = getTrackStats(track);
+    const exams = EXAM_SETS.filter((exam) => exam.trackId === track.id);
+    const fullMocks = exams.filter((exam) => exam.examKind !== 'scenario');
+    const scenarioDrills = exams.filter((exam) => exam.examKind === 'scenario');
+    const latestAttempt = (examId) => {
+      const record = getExamRecord(examId);
+      return record.attempts.length ? record.attempts[0] : null;
+    };
+    const mockAttempts = fullMocks
+      .map((exam) => ({ exam, attempt: latestAttempt(exam.id) }))
+      .filter((item) => item.attempt);
+    const mockAverage = mockAttempts.length
+      ? Math.round(mockAttempts.reduce((sum, item) => sum + (Number(item.attempt.percent) || 0), 0) / mockAttempts.length)
+      : 0;
+    const scenarioAttempts = scenarioDrills
+      .map((exam) => {
+        const attempt = latestAttempt(exam.id);
+        return attempt ? { exam, attempt, at: Number(attempt.at) || 0 } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.at - a.at);
+    const scenarioLatest = scenarioAttempts.length ? scenarioAttempts[0].attempt : null;
+    return { stats, fullMocks, scenarioDrills, mockAttempts, mockAverage, scenarioLatest };
+  }
+
+  function getExamPrepReadiness(track) {
+    const prep = track.examPrep || {};
+    const data = getExamPrepStats(track);
+    const targetPercent = Number(prep.targetPercent) || 70;
+    const readinessTarget = Number(prep.readinessTarget) || targetPercent;
+    const scenarioTarget = Number(prep.scenarioTarget) || targetPercent;
+    const checks = [
+      {
+        label: 'Bài core',
+        value: `${data.stats.coreCompleted}/${data.stats.coreLessons}`,
+        pass: data.stats.coreLessons > 0 && data.stats.coreCompleted === data.stats.coreLessons
+      },
+      {
+        label: 'Quiz chính xác',
+        value: `${Math.round(data.stats.coreQuizAccuracy * 100)}%`,
+        pass: data.stats.coreQuizTotal > 0 && data.stats.coreQuizAccuracy * 100 >= readinessTarget
+      },
+      {
+        label: 'Thẻ ghi nhớ',
+        value: `${data.stats.coreReviewed}/${data.stats.coreCards} · ${Math.round(data.stats.coreCoverage * 100)}%`,
+        pass: data.stats.coreCards > 0 && data.stats.coreCoverage * 100 >= 80
+      },
+      {
+        label: 'Full mocks',
+        value: `${data.mockAttempts.length}/${data.fullMocks.length} · TB ${data.mockAverage}%`,
+        pass: data.fullMocks.length > 0
+          && data.mockAttempts.length >= data.fullMocks.length
+          && data.mockAverage >= readinessTarget
+      }
+    ];
+
+    if (data.scenarioDrills.length) {
+      checks.push({
+        label: 'Scenario drill',
+        value: data.scenarioLatest ? `${data.scenarioLatest.percent}%` : 'Chưa làm',
+        pass: Boolean(data.scenarioLatest && Number(data.scenarioLatest.percent) >= scenarioTarget)
+      });
+    }
+
+    return {
+      prep,
+      data,
+      checks,
+      ready: checks.every((check) => check.pass),
+      targetPercent,
+      readinessTarget,
+      scenarioTarget
+    };
+  }
+
+  function renderExamPrepCard(track) {
+    const readiness = getExamPrepReadiness(track);
+    const prep = readiness.prep;
+    const rows = readiness.checks.map((check) => `<div class="split-row">
+      <div class="split-row-copy"><strong>${escapeHtml(check.label)}</strong><span>${escapeHtml(check.value)}</span></div>
+      <span class="badge ${check.pass ? 'success' : 'warning'}">${check.pass ? 'Đạt' : 'Cần ôn'}</span>
+    </div>`).join('');
+
+    return `<div class="card card-pad mt-16">
+      <div class="card-header">
+        <div><h3>Exam readiness · ${escapeHtml(prep.examName || track.shortTitle)}</h3><p>${escapeHtml(prep.format || '')}${prep.passMark ? ` · pass ${escapeHtml(prep.passMark)}` : ''} · mục tiêu luyện ${readiness.targetPercent}% · ngưỡng readiness ${readiness.readinessTarget}%</p></div>
+        <span class="badge ${readiness.ready ? 'success' : 'primary'}">${readiness.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>
+      </div>
+      <div class="split-list">${rows}</div>
+      <p class="faint small mt-12">${escapeHtml(prep.disclaimer || 'Đây là chỉ báo luyện tập, không phải cam kết đỗ.')}</p>
+    </div>`;
   }
 
   function getOverallStats() {
@@ -1119,20 +1252,22 @@
     let reviewed = 0;
     let masterySum = 0;
     let readinessSum = 0;
+    const includedTracks = TRACKS.filter((track) => track.affectsOverall !== false);
 
-    TRACKS.forEach((track) => {
+    includedTracks.forEach((track) => {
       const stats = getTrackStats(track);
-      lessons += stats.lessons;
-      completed += stats.completed;
-      quizTotal += stats.quizTotal;
-      quizCorrect += stats.quizCorrect;
-      cards += stats.cards;
-      reviewed += stats.reviewed;
+      lessons += stats.coreLessons;
+      completed += stats.coreCompleted;
+      quizTotal += stats.coreQuizTotal;
+      quizCorrect += stats.coreQuizCorrect;
+      cards += stats.coreCards;
+      reviewed += stats.coreReviewed;
       masterySum += stats.mastery;
       readinessSum += stats.readiness;
     });
 
     return {
+      trackCount: includedTracks.length,
       lessons,
       completed,
       quizTotal,
@@ -1140,8 +1275,8 @@
       cards,
       reviewed,
       quizAccuracy: quizTotal ? quizCorrect / quizTotal : 0,
-      mastery: TRACKS.length ? Math.round(masterySum / TRACKS.length) : 0,
-      readiness: TRACKS.length ? Math.round(readinessSum / TRACKS.length) : 0
+      mastery: includedTracks.length ? Math.round(masterySum / includedTracks.length) : 0,
+      readiness: includedTracks.length ? Math.round(readinessSum / includedTracks.length) : 0
     };
   }
 
@@ -1162,6 +1297,7 @@
 
   function getNextLesson(track) {
     for (const module of track.modules) {
+      if (module.optional) continue;
       for (const lesson of module.lessons) {
         if (!getProgress(lesson.id).completed) return { track, module, lesson };
       }
@@ -1172,6 +1308,7 @@
   function getWeakLesson(track) {
     const candidates = [];
     track.modules.forEach((module) => {
+      if (module.optional) return;
       module.lessons.forEach((lesson) => {
         const progress = getProgress(lesson.id);
         if (Number(progress.quizTotal) > 0) {
@@ -1481,7 +1618,9 @@
     const stats = getTrackStats(track);
     const unlocked = isTrackUnlocked(track.id);
     const active = state.settings.activeTrackId === track.id;
-    const completed = stats.completed === stats.lessons;
+    const lessonCount = track.examPrep ? stats.coreLessons : stats.lessons;
+    const lessonDone = track.examPrep ? stats.coreCompleted : stats.completed;
+    const completed = lessonCount > 0 && lessonDone === lessonCount;
     const role = track.optional ? 'Bổ trợ' : 'Chính';
     const badge = !unlocked
       ? '<span class="badge warning">Khoá</span>'
@@ -1503,7 +1642,7 @@
       <div class="progress-wrap">
         <div class="meta-row"><span>Mastery</span><strong>${stats.mastery}%</strong></div>
         ${progressBar(stats.mastery, stats.mastery >= 80 ? 'success' : '')}
-        <div class="meta-row"><span>${stats.completed}/${stats.lessons} bài</span><span>${stats.readiness}% sẵn sàng</span></div>
+        <div class="meta-row"><span>${lessonDone}/${lessonCount} bài</span><span>${stats.readiness}% sẵn sàng</span></div>
       </div>
       <div class="button-row">
         ${unlocked
@@ -1546,10 +1685,17 @@
     const due = getDueCards();
     const plan = getDailyPlan();
     const recent = getRecentActivity(5);
+    const heroLessonCount = track.examPrep ? stats.coreLessons : stats.lessons;
+    const heroLessonDone = track.examPrep ? stats.coreCompleted : stats.completed;
+    const examStart = track.examPrep
+      ? EXAM_SETS.find((exam) => exam.trackId === track.id && exam.examKind !== 'scenario')
+      : null;
 
     const heroAction = next
       ? `<a class="button" href="#/lesson/${next.lesson.id}">Tiếp tục: ${escapeHtml(next.lesson.title)}</a>`
-      : '<a class="button" href="#/tracks">Chọn lộ trình mới</a>';
+      : examStart
+        ? `<a class="button" href="#/lesson/${escapeHtml(examStart.lessonId)}">Làm ${escapeHtml(examStart.title)}</a>`
+        : '<a class="button" href="#/tracks">Chọn lộ trình mới</a>';
 
     return `<div class="page-head">
       <div>
@@ -1567,7 +1713,7 @@
         <div class="hero-progress">
           <div class="meta-row"><span>Mastery lộ trình</span><strong>${stats.mastery}%</strong></div>
           ${progressBar(stats.mastery, stats.mastery >= 80 ? 'success' : '')}
-          <div class="meta-row"><span>${stats.completed}/${stats.lessons} bài đã xong</span><span>${stats.readiness}% sẵn sàng</span></div>
+          <div class="meta-row"><span>${heroLessonDone}/${heroLessonCount} bài đã xong</span><span>${stats.readiness}% sẵn sàng</span></div>
         </div>
         <div class="button-row mt-16">
           ${heroAction}
@@ -1578,7 +1724,7 @@
         <div class="card mini-stat">
           <p class="stat-label">Bài đã hoàn thành</p>
           <p class="stat-value">${overall.completed}/${overall.lessons}</p>
-          <p class="stat-note">Trên cả ${TRACKS.length} lộ trình</p>
+          <p class="stat-note">Trên ${overall.trackCount} lộ trình chính</p>
         </div>
         <div class="card mini-stat">
           <p class="stat-label">Thẻ đến hạn</p>
@@ -1602,7 +1748,7 @@
       <div class="card stat-card">
         <p class="stat-label">Mastery tổng</p>
         <p class="stat-value">${overall.mastery}%</p>
-        <p class="stat-note">Trung bình ${TRACKS.length} lộ trình</p>
+        <p class="stat-note">Trung bình ${overall.trackCount} lộ trình chính</p>
       </div>
       <div class="card stat-card">
         <p class="stat-label">Độ sẵn sàng</p>
@@ -1624,7 +1770,7 @@
       ${plan.length ? plan.map(renderPlanItem).join('') : '<p class="muted small">Không còn việc bắt buộc. Có thể ôn thêm hoặc nghỉ ngơi.</p>'}
     </div>
 
-    <div class="section-head"><div><h3>${TRACKS.length} lộ trình</h3><p>BA là lộ trình chính; các lộ trình còn lại là bổ trợ.</p></div></div>
+    <div class="section-head"><div><h3>${TRACKS.length} lộ trình</h3><p>ECBA là lộ trình chính; Securities Theory, ISTQB, CFA, IELTS, Fintech là bổ trợ.</p></div></div>
     <div class="track-grid">${TRACKS.map(renderTrackCard).join('')}</div>
 
     <div class="section-head"><div><h3>Hoạt động gần đây</h3><p>Những gì đã được ghi nhận trên máy này.</p></div></div>
@@ -1686,12 +1832,12 @@
     return `<div class="page-head">
       <div>
         <h2>Lộ trình</h2>
-        <p>BA là lộ trình chính với ECBA full coverage và wealth specialization; các lộ trình còn lại là bổ trợ, không bắt buộc.</p>
+        <p>ECBA là lộ trình chính với exam-ready coverage, applied BA labs, scenario drill và wealth specialization tùy chọn; Securities Theory, ISTQB, CFA, IELTS, Fintech là bổ trợ, không bắt buộc.</p>
       </div>
       <span class="badge primary">${TRACKS.length} lộ trình</span>
     </div>
     <div class="track-grid">${TRACKS.map(renderTrackCard).join('')}</div>
-    <p class="faint small mt-16">BA luôn mở. Các lộ trình bổ trợ có thể học trước, học song song, hoặc bỏ qua.</p>`;
+    <p class="faint small mt-16">ECBA luôn mở. Các lộ trình bổ trợ có thể học trước, học song song, hoặc bỏ qua.</p>`;
   }
 
   function cfaDiagnosticQuestions() {
@@ -2894,7 +3040,10 @@
       return `<div class="card module-card">
         <div class="module-head">
           <div><h4>Module ${moduleIndex + 1}: ${escapeHtml(module.title)}</h4><p>${escapeHtml(module.description)}</p></div>
-          <span class="badge ${moduleComplete ? 'success' : ''}">${done}/${module.lessons.length}</span>
+          <div class="button-row">
+            <span class="badge ${moduleComplete ? 'success' : ''}">${done}/${module.lessons.length}</span>
+            ${module.optional ? '<span class="badge">Bổ trợ</span>' : ''}
+          </div>
         </div>
         <div class="lesson-list">${rows}</div>
       </div>`;
@@ -2919,21 +3068,23 @@
 
     <div class="grid grid-3">
       <div class="card stat-card">
-        <p class="stat-label">Hoàn thành</p>
-        <p class="stat-value">${stats.completed}/${stats.lessons}</p>
-        <p class="stat-note">${Math.round(stats.completion * 100)}% bài học</p>
+        <p class="stat-label">${track.examPrep ? 'Hoàn thành core' : 'Hoàn thành'}</p>
+        <p class="stat-value">${track.examPrep ? `${stats.coreCompleted}/${stats.coreLessons}` : `${stats.completed}/${stats.lessons}`}</p>
+        <p class="stat-note">${Math.round((track.examPrep ? stats.coreCompletion : stats.completion) * 100)}% bài học</p>
       </div>
       <div class="card stat-card">
         <p class="stat-label">Mastery</p>
         <p class="stat-value">${stats.mastery}%</p>
-        <p class="stat-note">40% hoàn thành · 40% quiz · 20% tự tin</p>
+        <p class="stat-note">${track.examPrep ? 'Core only · ' : ''}40% hoàn thành · 40% quiz · 20% tự tin</p>
       </div>
       <div class="card stat-card">
         <p class="stat-label">Sẵn sàng</p>
         <p class="stat-value">${stats.readiness}%</p>
-        <p class="stat-note">${stats.reviewed}/${stats.cards} thẻ đã ôn</p>
+        <p class="stat-note">${track.examPrep ? `${stats.coreCompleted}/${stats.coreLessons} bài core · ${stats.coreReviewed}/${stats.coreCards} thẻ` : `${stats.reviewed}/${stats.cards} thẻ đã ôn`}</p>
       </div>
     </div>
+
+    ${track.examPrep ? renderExamPrepCard(track) : ''}
 
     ${!unlocked ? '<p class="badge warning mt-16">Lộ trình đang khoá. Mở thủ công nếu bạn muốn học trước.</p>' : ''}
     <div class="module-list mt-16">${modules}</div>`;
@@ -3110,7 +3261,7 @@
 
     return `<div class="page-head">
       <div>
-        <a class="small" href="#/track/${exam.trackId}">← ${escapeHtml(track ? track.shortTitle : exam.trackId)} · Full Mock Exams</a>
+        <a class="small" href="#/track/${exam.trackId}">← ${escapeHtml(track ? track.shortTitle : exam.trackId)} · ${escapeHtml(track && track.examModuleTitle ? track.examModuleTitle : 'Full Mock Exams')}</a>
         <h2>${escapeHtml(exam.title)}</h2>
         <p>${isTaskExam ? `${taskCount} task` : `${exam.questions.length} câu`} · ${formatExamMinutes(exam.durationMinutes)} · mục tiêu luyện ${exam.targetPercent}%</p>
       </div>

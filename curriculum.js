@@ -659,10 +659,88 @@ window.NEZHA_CURRICULUM = (() => {
 
   const ba = track(
     'ba',
-    'Business Analysis (ECBA)',
-    'BA',
-    'Business analysis concepts, BABOK knowledge areas, and exam habits.',
+    'ECBA',
+    'ECBA',
+    'Exam-ready business analysis: BACCM, the nine ECBA domains, applied BA labs, full mocks, and an original scenario drill.',
     [
+      mod('ba-mod-0', 'ECBA Exam Blueprint & Study Plan', 'Know the exam, the domain weights, and the path to readiness.', [
+        lesson(
+          'ba-0-1',
+          'ECBA exam blueprint & scoring',
+          25,
+          [
+            'Describe the ECBA exam format and question style',
+            'Map the nine ECBA domains to the study modules',
+            'Explain why IIBA does not publish a fixed pass mark',
+            'Set a practice target that leaves room for exam-day error'
+          ],
+          `<p><strong>The exam.</strong> The Entry Certificate in Business Analysis is an entry-level IIBA certification. The exam has 50 multiple-choice questions and a 75-minute time limit. Most items are scenario-based: you are given a short business situation and asked to choose the best next action, technique, or concept.</p>
+          <p><strong>Nine domains.</strong> ECBA 2025 is organized around business analysis domains such as understanding business analysis, the BA mindset, implementing business analysis, change, need, solution, stakeholder, value, and context. Techniques and underlying competencies support those domains. The domains overlap in real work, so the exam tests judgment rather than isolated definitions.</p>
+          <p><strong>Scoring.</strong> IIBA does not publish a fixed pass mark. A sensible practice target is 75% on fresh timed mocks, with at least 70% on applied scenario drills. A high score on a mock you remember is weak evidence; use new attempts and review why each wrong option is wrong.</p>
+          <ul>
+            <li>50 questions · 75 minutes · scenario-heavy</li>
+            <li>Nine domains plus techniques and competencies</li>
+            <li>No official fixed pass mark; use 75% as a practice target</li>
+            <li>Read the stem for the need, stakeholder, context, value, and change</li>
+          </ul>`,
+          [
+            { term: 'ECBA', definition: 'Entry Certificate in Business Analysis, an entry-level IIBA certification.' },
+            { term: 'Scenario question', definition: 'A question built around a short business situation that asks for the best action or judgment.' },
+            { term: 'Domain', definition: 'A major area of business analysis knowledge and practice covered by the ECBA blueprint.' },
+            { term: 'Practice target', definition: 'A self-set score used to decide whether you are ready to book, not an official pass mark.' }
+          ],
+          [
+            fc('fc-ba-0-1-1', 'How many questions and how long is the ECBA exam?', '50 multiple-choice questions in 75 minutes.'),
+            fc('fc-ba-0-1-2', 'Does IIBA publish a fixed ECBA pass mark?', 'No. Use a practice target such as 75% on fresh timed mocks.'),
+            fc('fc-ba-0-1-3', 'What should you identify first in a scenario?', 'The need, stakeholders, context, expected value, and the change being considered.')
+          ],
+          [
+            mcq('q-ba-0-1-1', 'What is the ECBA exam format?', ['50 questions in 75 minutes', '100 questions in 2 hours', 'A written essay only', 'A 20-minute interview'], 0, 'The ECBA exam is 50 multiple-choice questions in 75 minutes.'),
+            tf('q-ba-0-1-2', 'IIBA publishes a fixed pass mark for ECBA.', false, 'IIBA does not publish a fixed pass mark; use a practice target.'),
+            mcq('q-ba-0-1-3', 'Which is the best first step in a scenario question?', ['Pick the longest answer', 'Identify the need, stakeholders, context, and value', 'Ignore the constraints', 'Assume the solution is software'], 1, 'Scenario questions reward reading the need and context before choosing an action.')
+          ],
+          'Explain how a scenario question differs from a definition-recall question, using one workplace example.'
+        ),
+        lesson(
+          'ba-0-2',
+          '8-week study plan & readiness gates',
+          25,
+          [
+            'Sequence the core ECBA modules into an eight-week plan',
+            'Use mocks and the scenario drill at the right points',
+            'Maintain an error log and a weak-topic review loop',
+            'Decide when the readiness gates are strong enough to book'
+          ],
+          `<p><strong>Why eight weeks.</strong> The core path is designed for a working learner: two or three short sessions each week, one longer practice block, and a review day. The goal is steady retrieval, not a last-minute content sprint. Move faster if your quiz accuracy stays high; slow down if a domain stays below 70%.</p>
+          <p><strong>The path.</strong> Start with this orientation and BA Fundamentals. Work through the twelve ECBA domain modules, then the applied BA labs. Finish with the final review, the three full mocks, and the scenario drill. The optional wealth modules come after the exam path; they are useful for product BA work but are not required for ECBA readiness.</p>
+          <p><strong>Mock cadence.</strong> Use Full Mock 1 after the first half of the domains as a diagnostic. Use Full Mock 2 after the applied labs. Save Full Mock 3 for the final two weeks, then take the scenario drill. Review every wrong answer and every correct guess; the topic breakdown is more useful than the total score.</p>
+          <p><strong>Readiness gates.</strong> The app checks core lesson completion, quiz accuracy, flashcard coverage, the three full mocks, and the scenario drill. These are advisory gates, not a guarantee. If one gate is weak, fix the underlying topic before booking. Keep a short error log with the question, the trap, and the rule you will use next time.</p>
+          <ul>
+            <li>Weeks 1–2: orientation, fundamentals, change, need</li>
+            <li>Weeks 3–4: solution, stakeholder, value, context, techniques</li>
+            <li>Weeks 5–6: applied labs, competencies, exam skills</li>
+            <li>Weeks 7–8: final review, three mocks, scenario drill, weak-topic repair</li>
+            <li>Core path first; optional wealth modules after readiness</li>
+          </ul>`,
+          [
+            { term: 'Core path', definition: 'The modules required for ECBA readiness, excluding optional specialization modules.' },
+            { term: 'Readiness gate', definition: 'An advisory threshold for completion, quiz accuracy, flashcard coverage, or mock performance.' },
+            { term: 'Mock debrief', definition: 'A structured review of wrong answers, correct guesses, and topic-level weaknesses after a timed attempt.' },
+            { term: 'Error log', definition: 'A short record of mistakes, the trap involved, and the rule to apply next time.' }
+          ],
+          [
+            fc('fc-ba-0-2-1', 'When should you take Full Mock 1?', 'After the first half of the domain modules, as a diagnostic.'),
+            fc('fc-ba-0-2-2', 'Why review correct guesses?', 'A guess can hide a weak topic and inflate the score.'),
+            fc('fc-ba-0-2-3', 'What is the core path?', 'The modules required for ECBA readiness, excluding optional wealth modules.')
+          ],
+          [
+            mcq('q-ba-0-2-1', 'What should you do after a mock?', ['Only check the total score', 'Review wrong answers, correct guesses, and topic breakdown', 'Immediately take another mock', 'Ignore the topic breakdown'], 1, 'The debrief should focus on wrong answers, lucky guesses, and weak topics.'),
+            tf('q-ba-0-2-2', 'Optional wealth modules are required for ECBA readiness.', false, 'They are optional specialization content and are excluded from core readiness.'),
+            mcq('q-ba-0-2-3', 'What is a readiness gate?', ['An official pass guarantee', 'An advisory threshold for booking readiness', 'A type of exam question', 'A payment deadline'], 1, 'Readiness gates are advisory study thresholds, not an official guarantee.')
+          ],
+          'Design an eight-week schedule that fits your real calendar and names the two topics you will review most often.'
+        )
+      ]),
       mod('ba-mod-1', 'BA Fundamentals', 'The role, the guide, and the exam.', [
         lesson(
           'ba-1-1',
@@ -1551,11 +1629,104 @@ window.NEZHA_CURRICULUM = (() => {
           ],
           'Tell a two-minute STAR story about a requirement or UAT problem you solved.'
         )
+      ]),
+      mod('ba-mod-9', 'Final Review & Exam Day', 'Turn practice evidence into a focused review plan and a calm exam-day protocol.', [
+        lesson(
+          'ba-9-1',
+          'Weak-topic review & mock debrief',
+          25,
+          [
+            'Run a structured debrief after each full mock',
+            'Separate knowledge gaps from scenario-reading errors',
+            'Prioritize two or three weak topics instead of reviewing everything',
+            'Retest a weak topic with a fresh quiz or scenario'
+          ],
+          `<p><strong>Debrief before you retake.</strong> A mock score is only a summary. The useful evidence is in the answer review: which topic lost points, which distractor looked attractive, and whether you misread the stem. Sort every miss into one of three buckets: missing knowledge, misread scenario, or weak elimination.</p>
+          <p><strong>Knowledge gaps.</strong> If you cannot explain the concept without notes, reread the relevant lesson, write a one-sentence definition, and make a new flashcard. Then retest with the lesson quiz after a short delay. Do not immediately retake the same full mock; you will remember the answers and learn less.</p>
+          <p><strong>Scenario-reading errors.</strong> If you knew the concept but chose a plausible action that ignored a constraint, practise a slower read: identify the need, stakeholders, context, value, and change before looking at the options. Then eliminate options that depend on facts not stated in the stem.</p>
+          <p><strong>Weak elimination.</strong> If two options looked equally good, write the decision rule in your error log. For example: "When the sponsor asks for a solution before the need is agreed, clarify the need first." Review the log before the next attempt.</p>
+          <ul>
+            <li>Bucket each miss: knowledge, scenario reading, or elimination</li>
+            <li>Review the topic breakdown, not just the total score</li>
+            <li>Repair two or three weak topics before another full mock</li>
+            <li>Retest with fresh questions, not the same remembered set</li>
+          </ul>`,
+          [
+            { term: 'Knowledge gap', definition: 'A concept you cannot explain or apply without notes.' },
+            { term: 'Scenario-reading error', definition: 'A miss caused by overlooking a constraint, stakeholder, or need in the stem.' },
+            { term: 'Elimination rule', definition: 'A repeatable reason for rejecting a tempting but unsupported option.' },
+            { term: 'Fresh retest', definition: 'A new attempt that is not simply the same remembered question set.' }
+          ],
+          [
+            fc('fc-ba-9-1-1', 'What are the three debrief buckets?', 'Missing knowledge, misread scenario, and weak elimination.'),
+            fc('fc-ba-9-1-2', 'Why not immediately retake the same mock?', 'You may remember answers and get a misleading score.'),
+            fc('fc-ba-9-1-3', 'What goes in an error log?', 'The question or trap, the mistake, and the rule to apply next time.')
+          ],
+          [
+            mcq('q-ba-9-1-1', 'What is the most useful first step after a mock?', ['Check only the total score', 'Review misses by topic and error type', 'Book the exam immediately', 'Delete the attempt'], 1, 'A structured review by topic and error type produces an actionable plan.'),
+            tf('q-ba-9-1-2', 'A correct guess is always evidence of mastery.', false, 'A guess can hide a knowledge gap; review it too.'),
+            mcq('q-ba-9-1-3', 'How many weak topics should you usually repair at once?', ['All of them', 'Two or three', 'None', 'Only the easiest one'], 1, 'Focusing on two or three weak topics is more sustainable and easier to retest.')
+          ],
+          'Take one mock result and write a debrief with two knowledge gaps, one scenario-reading error, and one elimination rule.'
+        ),
+        lesson(
+          'ba-9-2',
+          'Exam-day protocol',
+          20,
+          [
+            'Prepare logistics and reduce avoidable exam-day friction',
+            'Use a two-pass timing strategy for 50 questions in 75 minutes',
+            'Apply a consistent scenario-reading routine under pressure',
+            'Know when to guess, flag, and move on'
+          ],
+          `<p><strong>Before the exam.</strong> Confirm the appointment time, identification requirements, platform rules, and room setup. Test your equipment and internet if the exam is remote. Keep water, a clock, and any permitted materials ready. Avoid starting a new topic on exam day; review your error log and two or three anchor concepts instead.</p>
+          <p><strong>Timing.</strong> Fifty questions in 75 minutes averages 90 seconds per question. Use a two-pass approach. Pass one: answer the clear questions and flag the rest. Pass two: return to flagged questions with the remaining time. Do not let one long scenario consume five minutes early.</p>
+          <p><strong>Reading routine.</strong> Read the stem once for the situation, then identify the need, stakeholders, context, value, and change. Read the question line carefully, especially words such as best, first, most likely, or except. Predict the kind of action before reading all options, then eliminate unsupported choices.</p>
+          <p><strong>Guessing and review.</strong> If time is short, eliminate at least one option and choose the best remaining answer; never leave a blank. After the exam, write down the topics that felt uncertain while they are fresh, but do not let one hard question define your preparation.</p>
+          <ul>
+            <li>Average 90 seconds per question; flag and return</li>
+            <li>Use a two-pass strategy, not a single slow pass</li>
+            <li>Identify need, stakeholder, context, value, and change</li>
+            <li>Eliminate unsupported options; always submit an answer</li>
+            <li>Review the error log, not new content, on exam day</li>
+          </ul>`,
+          [
+            { term: 'Two-pass strategy', definition: 'Answer clear questions first, flag uncertain ones, then return with remaining time.' },
+            { term: 'Flagging', definition: 'Marking a question for review instead of spending too long on it immediately.' },
+            { term: 'Stem', definition: 'The scenario and question text that define the facts and the ask.' },
+            { term: 'Anchor concept', definition: 'A high-value concept you review briefly to steady your judgment before the exam.' }
+          ],
+          [
+            fc('fc-ba-9-2-1', 'What is the average time per ECBA question?', 'About 90 seconds for 50 questions in 75 minutes.'),
+            fc('fc-ba-9-2-2', 'What is a two-pass strategy?', 'Answer clear questions first, flag uncertain ones, then return to them.'),
+            fc('fc-ba-9-2-3', 'What should you do on exam day instead of learning new content?', 'Review your error log and a few anchor concepts.')
+          ],
+          [
+            mcq('q-ba-9-2-1', 'What is the average time per question?', ['30 seconds', '90 seconds', '3 minutes', '5 minutes'], 1, '75 minutes divided by 50 questions is about 90 seconds per question.'),
+            tf('q-ba-9-2-2', 'It is better to leave a blank than to guess after eliminating one option.', false, 'Choose the best remaining answer; there is no benefit to leaving a blank.'),
+            mcq('q-ba-9-2-3', 'What should you identify before reading the options?', ['The longest option', 'Need, stakeholders, context, value, and change', 'The answer key pattern', 'The exam provider logo'], 1, 'A consistent stem-reading routine reduces avoidable scenario errors.')
+          ],
+          'Write a one-page exam-day checklist covering logistics, timing, reading routine, and what you will do when a question feels ambiguous.'
+        )
       ])
     ]
   );
 
   ba.prerequisiteId = null;
+  ba.examModuleTitle = 'Full Mocks & Scenario Drill';
+  ba.examPrep = {
+    examName: 'ECBA',
+    provider: 'IIBA',
+    format: '50 câu · 75 phút',
+    targetPercent: 75,
+    mockTarget: 75,
+    scenarioTarget: 70,
+    disclaimer: 'Unofficial practice. IIBA does not publish a fixed ECBA pass mark, and this app does not guarantee a pass. Full mocks are generated knowledge checks; the scenario drill is original applied practice, not IIBA exam content.'
+  };
+  ['ba-mod-5', 'ba-mod-6', 'ba-mod-7', 'ba-mod-8'].forEach((moduleId) => {
+    const module = ba.modules.find((item) => item.id === moduleId);
+    if (module) module.optional = true;
+  });
 
   const cfa = track(
     'cfa',

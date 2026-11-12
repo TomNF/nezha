@@ -172,19 +172,58 @@
 
   const baModules = buildModules('ba', content.ecba, 4);
   const cfaModules = buildModules('cfa', content.cfa, 3);
+  const securitiesModules = content.securities ? buildModules('securities', content.securities, 4) : [];
+  const istqbModules = content.istqb ? buildModules('istqb', content.istqb, 4) : [];
 
   attach('ba', baModules, 'ba-mod-5');
   attach('cfa', cfaModules);
+  attach('securities', securitiesModules, 'sec-mod-9');
+  attach('istqb', istqbModules, 'istqb-mod-7');
 
   const ba = trackById.ba;
   if (ba) {
-    ba.description = 'ECBA full coverage, scenario practice, and a wealth-management specialization for front-office product BA work.';
-    ba.lessonsNote = 'Core ECBA deep dives, three full mock exams, and a wealth specialization.';
+    const baOrder = [
+      'ba-mod-0',
+      'ba-mod-1',
+      'ba-core-1',
+      'ba-core-2',
+      'ba-core-3',
+      'ba-core-4',
+      'ba-core-5',
+      'ba-core-6',
+      'ba-core-7',
+      'ba-core-8',
+      'ba-core-9',
+      'ba-core-10',
+      'ba-core-11',
+      'ba-core-12',
+      'ba-mod-2',
+      'ba-mod-3',
+      'ba-mod-4',
+      'ba-mod-9'
+    ];
+    const byId = new Map(ba.modules.map((module) => [module.id, module]));
+    const ordered = baOrder.map((id) => byId.get(id)).filter(Boolean);
+    const orderedIds = new Set(baOrder);
+    const rest = ba.modules.filter((module) => !orderedIds.has(module.id));
+    ba.modules = ordered.concat(rest);
+    ba.description = 'Exam-ready ECBA coverage: BACCM and the nine domains, applied BA labs, three full mocks, an original scenario drill, and an optional wealth specialization.';
+    ba.lessonsNote = 'Core ECBA deep dives, applied BA labs, three full mock exams, a scenario drill, and optional wealth modules.';
   }
 
   const cfa = trackById.cfa;
   if (cfa) {
     cfa.description = 'CFA Level I 2027 orientation plus full-coverage deep dives and three full mock exams.';
     cfa.lessonsNote = 'Deep dives, three full mock exams, and a 2027-weight study plan.';
+  }
+
+  const securities = trackById.securities;
+  if (securities) {
+    securities.lessonsNote = 'Two orientation lessons, eight SRTC-aligned topic modules, a final review, three practice mocks, and an optional trading-app bridge.';
+  }
+
+  const istqb = trackById.istqb;
+  if (istqb) {
+    istqb.lessonsNote = 'Two orientation lessons, six CTFL chapter modules, a final review, three practice mocks, and an optional trading-app QA bridge.';
   }
 })();
