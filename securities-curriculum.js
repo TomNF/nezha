@@ -318,6 +318,15 @@
     disclaimer: 'Unofficial practice only. NeZha is not affiliated with SRTC or UBCKNN. The official program, fee, schedule, and assessment are controlled by SRTC, so verify current details with SRTC. This app does not award the certificate and does not guarantee a pass.'
   };
 
+  securities.source = 'SRTC public basic securities program outline';
+  securities.verifiedOn = '2026-11-12';
+  securities.volatile = true;
+  securities.volatileReason = 'Fees, schedules, session format, and assessment rules can change; confirm current details with SRTC.';
+  securities.examPrep.source = securities.source;
+  securities.examPrep.verifiedOn = securities.verifiedOn;
+  securities.examPrep.volatile = securities.volatile;
+  securities.examPrep.volatileReason = securities.volatileReason;
+
   if (!curriculum.tracks.some((track) => track.id === securities.id)) {
     const baIndex = curriculum.tracks.findIndex((track) => track.id === 'ba');
     curriculum.tracks.splice(baIndex >= 0 ? baIndex + 1 : curriculum.tracks.length, 0, securities);

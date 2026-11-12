@@ -1,5 +1,8 @@
 # ECBA Architecture Handoff
 
+**Status:** Exam-ready core implemented and validated.
+**Last verified:** 2026-11-12
+
 ## Exam facts
 
 - The IIBA ECBA exam has **50 questions in 75 minutes**.
@@ -40,4 +43,5 @@ The ECBA scenario data validation command is:
 
 ```sh
 npm run validate:ecba-scenarios
+npm run validate:all
 ```

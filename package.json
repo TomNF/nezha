@@ -11,6 +11,7 @@
     "validate:securities": "node scripts/validate-securities.mjs",
     "validate:istqb": "node scripts/validate-istqb.mjs",
     "validate:ecba-scenarios": "node scripts/validate-ecba-scenarios.mjs",
+    "validate:all": "npm run validate:cfa && npm run validate:ielts && npm run validate:ecba-scenarios && npm run validate:securities && npm run validate:istqb",
     "validate:cfa:phase1": "node scripts/validate-cfa-phase1.mjs",
     "build:pwa": "node scripts/build-pwa.mjs",
     "build:ielts-audio": "node scripts/build-ielts-audio.mjs",

@@ -1,8 +1,8 @@
 # Securities Theory (SRTC) — Handoff Note
 
-**Status:** Content, exam registration, curriculum shell, and handoff created.
-**Date:** 2026-11-11
-**Repo:** `/Users/tomphan/Documents/OPENCODE/NeZha`
+**Status:** Content, exam registration, curriculum shell, volatile metadata, validation, and handoff implemented.
+**Date:** 2026-11-12
+**Repo:** NeZha repository root
 
 ## 1. Course position
 
@@ -18,6 +18,7 @@
 - Reference fee: 3.2 million VND.
 - Fees, schedules, teaching format, and assessment rules can change; verify current details with SRTC.
 - The electronic CCHN rules under Thông tư 135/2025/TT-BTC effective from 01/07/2026 should be checked against official sources.
+- Recorded metadata: `source = "SRTC public basic securities program outline"`, `verifiedOn = "2026-11-12"`, `volatile = true`. All study facts carry this metadata because fee, schedule, and assessment details can change.
 
 ## 3. Topic map
 
@@ -52,17 +53,25 @@ Lessons follow the existing NeZha shape: objectives, original `contentHtml`, key
 - `securities-curriculum.js`: orientation, final review, optional trading-app bridge, exam preparation metadata, and insertion immediately after the BA track.
 - `docs/securities-plan.md`: this handoff note.
 
-`index.html`, `sw.js`, `package.json`, `app.js`, `curriculum.js`, `content-data.js`, `curriculum-ext.js`, and `AGENTS.md` were intentionally not edited.
+Runtime registration, PWA cache entries, `package.json` scripts, the BA stats path, and `AGENTS.md` were also updated. Preserve the existing exam engine and local-first behavior.
 
 ## 6. Validation
 
-The three JavaScript files pass `node --check`. The planned validation command is:
+Run:
 
 ```bash
+npm run check
 npm run validate:securities
 ```
 
-That npm script does not exist yet and must be added separately, together with the runtime script registration in `index.html` and the service-worker cache list in `sw.js`.
+For the full repository check:
+
+```bash
+npm run validate:all
+npm run build:pwa
+```
+
+The validator checks the 8 topics, 20 core lessons, 3 mocks, balanced answers, unique stems, explanations, forbidden option patterns, and source/verifiedOn/volatile metadata.
 
 ## 7. Sources to verify
 

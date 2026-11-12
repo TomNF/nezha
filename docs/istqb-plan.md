@@ -1,8 +1,8 @@
 # ISTQB Foundation (CTFL v4.0) — Handoff Note
 
-**Status:** Track shell, content data, mock registration, and plan added.
-**Date:** 2026-11-11
-**Repo:** `/Users/tomphan/Documents/OPENCODE/NeZha`
+**Status:** Track shell, content data, objective map, K3 scenario drill, metadata, mock registration, and coverage report implemented.
+**Date:** 2026-11-12
+**Repo:** NeZha repository root
 
 ## 1. Official CTFL facts used
 
@@ -18,6 +18,8 @@
 - K-level mix: 8 K1, 24 K2, 8 K3.
 
 App mocks are single-best-answer approximations. Official items may differ.
+
+Recorded metadata: `source = "ISTQB CTFL v4.0 syllabus v4.0.1, public outline"`, `verifiedOn = "2026-11-12"`, `volatile = false`. Every study fact carries the same metadata.
 
 ## 2. Chapter mapping
 
@@ -39,6 +41,8 @@ App mocks are single-best-answer approximations. Official items may differ.
 - `curriculum-ext.js` is expected to insert `istqb-core-1..6` before `istqb-mod-7` using the content topics.
 - The ISTQB track is inserted after Securities when present, otherwise after BA.
 - Track is optional (`optional = true`), has no prerequisite, and does not affect the overall score.
+- All 60 study facts are bound to 21 original objective codes (`NZ-FND-*`, `NZ-SDLC-*`, `NZ-STAT-*`, `NZ-DES-*`, `NZ-MGT-*`, `NZ-TOOL-*`).
+- The objective map and fact counts are documented in `docs/istqb-coverage.md`.
 
 ## 4. Practice mocks
 
@@ -46,6 +50,8 @@ App mocks are single-best-answer approximations. Official items may differ.
 - Each mock: 40 questions, 60 minutes, target 65% (26/40).
 - Question counts follow the six-chapter distribution above.
 - Registration uses the existing exam registry: `window.NEZHA_EXAMS.buildFactExamSets(...)` with 3 forms and 4 options per question.
+- `istqb-k3-scenario-drill` adds 20 original K3 questions in 30 minutes: 7 equivalence partitioning, 7 boundary-value analysis, and 6 decision table.
+- The K3 drill uses a 65% practice target and is not a real exam form.
 
 ## 5. Mock limitations
 
@@ -65,16 +71,18 @@ Unofficial original study content. No ISTQB affiliation, endorsement, or approva
 
 ## 8. Validation
 
-The validation command will be added as:
-
-```bash
-npm run validate:istqb
-```
-
-Existing checks that must continue to pass:
+Run:
 
 ```bash
 npm run check
-npm run validate:cfa
-npm run validate:ielts
+npm run validate:istqb
 ```
+
+For the full repository check:
+
+```bash
+npm run validate:all
+npm run build:pwa
+```
+
+The validator checks the 3 full mocks, the 20-question K3 drill, objective coverage, unique stems, explanations, forbidden option patterns, answer balance, and source/verifiedOn/volatile metadata.

@@ -312,7 +312,7 @@ window.NEZHA_ISTQB = (() => {
     id: 'istqb',
     title: 'ISTQB Foundation (CTFL)',
     shortTitle: 'ISTQB',
-    description: 'CTFL v4.0 coverage for the current Foundation Level syllabus: six chapters, 3 practice mocks, and an optional trading-app QA bridge. This is an unofficial original study track, not ISTQB material.',
+    description: 'CTFL v4.0 coverage for the current Foundation Level syllabus: six chapters, 3 full practice mocks, a 20-question K3 drill, and an optional trading-app QA bridge. This is an unofficial original study track, not ISTQB material.',
     modules: [orientation, finalReview, trading],
     optional: true,
     prerequisiteId: null,
@@ -321,14 +321,22 @@ window.NEZHA_ISTQB = (() => {
     examPrep: {
       examName: 'ISTQB CTFL v4.0',
       provider: 'ISTQB',
-      format: '40 MCQ · 60 phút',
+      format: '3 mock × 40 MCQ · 60 phút + K3 drill × 20 · 30 phút',
       targetPercent: 65,
       readinessTarget: 70,
       mockTarget: 65,
+      scenarioTarget: 65,
       passMark: '26/40',
       disclaimer: 'Unofficial original practice. Not affiliated with, endorsed by, or approved by ISTQB. These are not official mock exams and do not guarantee a pass. Do not copy or redistribute ISTQB syllabus or exam material.'
     }
   };
+
+  istqb.source = 'ISTQB CTFL v4.0 syllabus v4.0.1, public outline';
+  istqb.verifiedOn = '2026-11-12';
+  istqb.volatile = false;
+  istqb.examPrep.source = istqb.source;
+  istqb.examPrep.verifiedOn = istqb.verifiedOn;
+  istqb.examPrep.volatile = istqb.volatile;
 
   if (!curriculum.tracks.some((track) => track.id === 'istqb')) {
     const anchorIndex = curriculum.tracks.findIndex((track) => track.id === 'securities');

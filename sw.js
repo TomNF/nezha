@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nezha-pwa-v5';
+const CACHE_VERSION = 'nezha-pwa-v6';
 
 const APP_SHELL = [
   './',

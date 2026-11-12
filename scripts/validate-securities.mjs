@@ -24,6 +24,59 @@ function assertUnique(items, label) {
   });
 }
 
+function normalizeStem(value) {
+  return String(value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function assertNoDuplicateStems(questions, label) {
+  const seen = new Map();
+  questions.forEach((question) => {
+    const stem = normalizeStem(question.question);
+    check(Boolean(stem), `Question ${question.id} has no stem.`);
+    if (!stem) return;
+    check(!seen.has(stem), `${label} has duplicate stem: ${question.id} and ${seen.get(stem)}`);
+    if (!seen.has(stem)) seen.set(stem, question.id);
+  });
+}
+
+function assertExplanations(questions, label) {
+  questions.forEach((question) => {
+    check(
+      typeof question.explanation === 'string' && question.explanation.trim().length > 0,
+      `${label} question ${question.id} has no explanation.`
+    );
+  });
+}
+
+function assertNoForbiddenOptions(questions, label) {
+  const forbidden = /\b(all|none) of the above\b|\bboth a and b\b|\ba and b\b|\bcả .*trên\b|\btất cả (các )?(đáp án|phương án)\b|\bkhông (có )?(đáp án|phương án) nào\b/i;
+  questions.forEach((question) => {
+    (question.options || []).forEach((option) => {
+      check(!forbidden.test(String(option || '')), `${label} question ${question.id} uses a forbidden option: ${option}`);
+    });
+  });
+}
+
+function assertBalancedAnswers(questions, label, minShare, maxShare) {
+  const optionCount = questions.reduce((max, question) => {
+    return Math.max(max, Array.isArray(question.options) ? question.options.length : 0);
+  }, 0);
+  const counts = Array.from({ length: optionCount }, () => 0);
+  questions.forEach((question) => {
+    if (Number.isInteger(question.answer) && question.answer >= 0 && question.answer < optionCount) {
+      counts[question.answer] += 1;
+    }
+  });
+  const total = questions.length || 1;
+  counts.forEach((count, index) => {
+    const share = count / total;
+    check(
+      share >= minShare && share <= maxShare,
+      `${label} answer index ${index} has ${count}/${total} (${(share * 100).toFixed(1)}%), outside ${(minShare * 100).toFixed(0)}-${(maxShare * 100).toFixed(0)}%.`
+    );
+  });
+}
+
 const sandbox = { window: {} };
 vm.createContext(sandbox);
 [
@@ -74,6 +127,23 @@ check(content.topics.length === 8, `Expected 8 securities topics, found ${conten
 check(content.sections.length === 1, 'Securities content should have one section.');
 check(content.sections[0].minutes === 60, 'Securities section should be 60 minutes.');
 check(content.targetPercent === 70, 'Securities content target should be 70%.');
+check(Boolean(content.source), 'Securities content is missing a source.');
+check(/^\d{4}-\d{2}-\d{2}$/.test(content.verifiedOn || ''), 'Securities content is missing a valid verifiedOn date.');
+check(content.volatile === true, 'Securities content should be marked volatile.');
+check(Boolean(content.volatileReason), 'Securities content should explain why it is volatile.');
+check(track.source === content.source, 'Securities track source should match content metadata.');
+check(track.verifiedOn === content.verifiedOn, 'Securities track verifiedOn should match content metadata.');
+check(track.volatile === true, 'Securities track should be marked volatile.');
+check(track.examPrep.source === content.source, 'Securities examPrep source should match content metadata.');
+check(track.examPrep.verifiedOn === content.verifiedOn, 'Securities examPrep verifiedOn should match content metadata.');
+check(track.examPrep.volatile === true, 'Securities examPrep should be marked volatile.');
+content.topics.forEach((topic) => {
+  topic.facts.forEach((fact) => {
+    check(fact.source === content.source, `Fact ${fact.term} has mismatched source metadata.`);
+    check(fact.verifiedOn === content.verifiedOn, `Fact ${fact.term} has mismatched verifiedOn metadata.`);
+    check(fact.volatile === true, `Fact ${fact.term} should be marked volatile.`);
+  });
+});
 
 assertUnique(track.modules, 'Securities modules');
 assertUnique(coreLessons, 'Securities core lessons');
@@ -117,6 +187,10 @@ check(examSets.length === 3, `Expected 3 securities mocks, found ${examSets.leng
 const allQuestions = examSets.flatMap((exam) => exam.questions || []);
 assertUnique(examSets, 'Securities exam sets');
 assertUnique(allQuestions, 'Securities exam questions');
+assertNoDuplicateStems(allQuestions, 'Securities mocks');
+assertExplanations(allQuestions, 'Securities mock');
+assertNoForbiddenOptions(allQuestions, 'Securities mock');
+assertBalancedAnswers(allQuestions, 'Securities mocks', 0.15, 0.35);
 
 examSets.forEach((exam) => {
   check(exam.sections.length === 1, `Exam ${exam.id} should have one section.`);
@@ -135,6 +209,7 @@ examSets.forEach((exam) => {
     const count = exam.questions.filter((question) => question.topicId === topic.id).length;
     check(count === topic.examCount, `Exam ${exam.id} has ${count} questions for ${topic.id}, expected ${topic.examCount}.`);
   });
+  assertBalancedAnswers(exam.questions, exam.id, 0.10, 0.45);
 });
 
 if (errors.length) {

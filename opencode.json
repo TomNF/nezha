@@ -1,4 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["docs/cfa-phase-1.md"]
+  "instructions": [
+    "docs/cfa-phase-1.md",
+    "docs/ecba-architecture.md",
+    "docs/ielts-plan.md",
+    "docs/istqb-plan.md",
+    "docs/securities-plan.md"
+  ]
 }

@@ -122,3 +122,133 @@ window.NEZHA_CONTENT.istqb = {
     }
   ]
 };
+
+const istqbLearningObjectives = {
+  'istqb-fundamentals': [
+    { id: 'NZ-FND-01', title: 'Explain what testing is for and how it differs from preventive quality assurance.' },
+    { id: 'NZ-FND-02', title: 'Distinguish human errors, defects, and observable failures.' },
+    { id: 'NZ-FND-03', title: 'Use verification, validation, and testware correctly in context.' },
+    { id: 'NZ-FND-04', title: 'Describe the test process and the limits expressed by testing principles.' }
+  ],
+  'istqb-sdlc': [
+    { id: 'NZ-SDLC-01', title: 'Relate lifecycle models and test levels to the scope of what is being tested.' },
+    { id: 'NZ-SDLC-02', title: 'Separate functional behavior from non-functional quality characteristics.' },
+    { id: 'NZ-SDLC-03', title: 'Plan maintenance testing for changes to an operating system.' }
+  ],
+  'istqb-static': [
+    { id: 'NZ-STAT-01', title: 'Explain static testing and static analysis without executing the product.' },
+    { id: 'NZ-STAT-02', title: 'Identify work products and the purpose of reviewing them.' },
+    { id: 'NZ-STAT-03', title: 'Choose a review type based on formality, roles, and feedback needs.' }
+  ],
+  'istqb-design': [
+    { id: 'NZ-DES-01', title: 'Connect test conditions, cases, procedures, and traceability into a coherent design.' },
+    { id: 'NZ-DES-02', title: 'Select a black-box technique for a given input, rule, or state-based problem.' },
+    { id: 'NZ-DES-03', title: 'Interpret statement and branch coverage as white-box evidence.' },
+    { id: 'NZ-DES-04', title: 'Use experience and collaboration to target risks that formal techniques may miss.' }
+  ],
+  'istqb-management': [
+    { id: 'NZ-MGT-01', title: 'Build a test approach around objectives, risk, scope, and strategy.' },
+    { id: 'NZ-MGT-02', title: 'Estimate effort and adjust testing through monitoring and control.' },
+    { id: 'NZ-MGT-03', title: 'Close testing and control work-product versions reproducibly.' },
+    { id: 'NZ-MGT-04', title: 'Track defects from discovery through resolution.' }
+  ],
+  'istqb-tools': [
+    { id: 'NZ-TOOL-01', title: 'Evaluate tool support and fit before adopting a test tool.' },
+    { id: 'NZ-TOOL-02', title: 'Explain what automation is good for and where it creates value.' },
+    { id: 'NZ-TOOL-03', title: 'Recognize automation risks and the role of frequent feedback in CI/CD.' }
+  ]
+};
+
+const istqbFactObjectives = {
+  'istqb-fundamentals': [
+    'NZ-FND-01',
+    'NZ-FND-01',
+    'NZ-FND-02',
+    'NZ-FND-02',
+    'NZ-FND-02',
+    'NZ-FND-03',
+    'NZ-FND-03',
+    'NZ-FND-03',
+    'NZ-FND-04',
+    'NZ-FND-04'
+  ],
+  'istqb-sdlc': [
+    'NZ-SDLC-01',
+    'NZ-SDLC-01',
+    'NZ-SDLC-01',
+    'NZ-SDLC-01',
+    'NZ-SDLC-01',
+    'NZ-SDLC-01',
+    'NZ-SDLC-01',
+    'NZ-SDLC-02',
+    'NZ-SDLC-02',
+    'NZ-SDLC-03'
+  ],
+  'istqb-static': [
+    'NZ-STAT-01',
+    'NZ-STAT-01',
+    'NZ-STAT-02',
+    'NZ-STAT-02',
+    'NZ-STAT-03',
+    'NZ-STAT-03',
+    'NZ-STAT-03',
+    'NZ-STAT-03'
+  ],
+  'istqb-design': [
+    'NZ-DES-01',
+    'NZ-DES-01',
+    'NZ-DES-01',
+    'NZ-DES-01',
+    'NZ-DES-02',
+    'NZ-DES-02',
+    'NZ-DES-02',
+    'NZ-DES-02',
+    'NZ-DES-03',
+    'NZ-DES-03',
+    'NZ-DES-04',
+    'NZ-DES-04'
+  ],
+  'istqb-management': [
+    'NZ-MGT-01',
+    'NZ-MGT-01',
+    'NZ-MGT-01',
+    'NZ-MGT-01',
+    'NZ-MGT-02',
+    'NZ-MGT-02',
+    'NZ-MGT-02',
+    'NZ-MGT-03',
+    'NZ-MGT-03',
+    'NZ-MGT-04'
+  ],
+  'istqb-tools': [
+    'NZ-TOOL-01',
+    'NZ-TOOL-01',
+    'NZ-TOOL-02',
+    'NZ-TOOL-02',
+    'NZ-TOOL-03',
+    'NZ-TOOL-03'
+  ]
+};
+
+const istqb = window.NEZHA_CONTENT.istqb;
+Object.entries(istqbFactObjectives).forEach(([topicId, objectiveIds]) => {
+  const topic = istqb.topics.find((item) => item.id === topicId);
+  if (!topic) return;
+  topic.learningObjectives = istqbLearningObjectives[topicId] || [];
+  objectiveIds.forEach((objectiveId, index) => {
+    if (topic.facts[index]) topic.facts[index].objectiveId = objectiveId;
+  });
+});
+
+const istqbMetadata = {
+  source: 'ISTQB CTFL v4.0 syllabus v4.0.1, public outline',
+  verifiedOn: '2026-11-12',
+  volatile: false
+};
+
+Object.assign(istqb, istqbMetadata);
+istqb.topics.forEach((topic) => {
+  topic.facts.forEach((fact) => {
+    Object.assign(fact, istqbMetadata);
+  });
+});

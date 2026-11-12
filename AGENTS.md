@@ -41,7 +41,8 @@ Read `docs/ecba-architecture.md` before changing ECBA content, mocks, or the BA 
 - Keep the internal track id `ba`; the display title/short title is `ECBA`.
 - Keep the core path exam-ready: orientation, nine domains, applied BA labs, final review, three full mocks, and the 20-question scenario drill.
 - Wealth modules `ba-mod-5` through `ba-mod-8` are optional and must stay after the exam module.
-- Do not copy IIBA content or claim IIBA affiliation, endorsement, or a pass guarantee. IIBA does not publish a fixed ECBA pass mark; use 75% as a practice target only.
+- Keep the UI in Vietnamese and learning content in English.
+- Do not copy IIBA or BABOK content or claim IIBA affiliation, endorsement, or a pass guarantee. IIBA does not publish a fixed ECBA pass mark; use 75% as a practice target only.
 - Run `npm run check` and `npm run validate:ecba-scenarios` after changes.
 
 ## Securities track
@@ -51,7 +52,9 @@ Read `docs/securities-plan.md` before changing Securities content or mocks.
 - Map the eight core modules to the public SRTC basic topics: market overview, instruments, primary market, secondary market, firms, funds, clearing/settlement, and disclosure.
 - Keep the track optional, `prerequisiteId: null`, and `affectsOverall: false`.
 - `sec-mod-10` is an optional trading-app bridge; keep it after the exam module.
-- Do not claim SRTC/UBCKNN affiliation, official course status, certificate issuance, or a pass guarantee. Verify fees, schedules, and assessment rules with SRTC.
+- Keep the UI in Vietnamese and learning content in English.
+- Do not copy SRTC/UBCKNN material or claim SRTC/UBCKNN affiliation, official course status, certificate issuance, or a pass guarantee. Verify fees, schedules, and assessment rules with SRTC.
+- Mark fee, schedule, regulatory, and assessment details as volatile and record `source` plus `verifiedOn` on facts.
 - Run `npm run check` and `npm run validate:securities` after changes.
 
 ## ISTQB track
@@ -62,7 +65,9 @@ Read `docs/istqb-plan.md` before changing ISTQB content or mocks.
 - The official pass mark is 26/40 (65%); use 70% as the internal readiness buffer.
 - Keep the track optional, `prerequisiteId: null`, and `affectsOverall: false`.
 - `istqb-mod-8` is an optional trading-app QA bridge; keep it after the exam module.
-- Do not copy ISTQB syllabus or exam material, and do not claim ISTQB affiliation, endorsement, or a pass guarantee.
+- Keep the UI in Vietnamese and learning content in English.
+- Do not copy ISTQB syllabus, sample-exam, or exam material, and do not claim ISTQB affiliation, endorsement, or a pass guarantee.
+- Bind every fact to an original learning-objective code and keep the coverage report current.
 - Run `npm run check` and `npm run validate:istqb` after changes.
 
 ## Commands
@@ -74,6 +79,7 @@ Read `docs/istqb-plan.md` before changing ISTQB content or mocks.
 - ECBA scenario validation: `npm run validate:ecba-scenarios`
 - Securities data validation: `npm run validate:securities`
 - ISTQB data validation: `npm run validate:istqb`
+- All content validation: `npm run validate:all`
 - IELTS audio generation: `npm run build:ielts-audio`
 - PWA deploy build: `npm run build:pwa`
 

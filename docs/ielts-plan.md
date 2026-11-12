@@ -2,7 +2,7 @@
 
 **Status:** IELTS Academic track implemented through full mock exams. Automated content checks and browser smoke tests pass.
 **Date:** 2026-11-11
-**Repo:** `/Users/tomphan/Documents/OPENCODE/NeZha`
+**Repo:** NeZha repository root
 
 ## 1. Product decisions
 

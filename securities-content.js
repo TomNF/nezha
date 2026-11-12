@@ -164,3 +164,18 @@ window.NEZHA_CONTENT.securities = {
     }
   ]
 };
+
+const securitiesMetadata = {
+  source: 'SRTC public basic securities program outline',
+  verifiedOn: '2026-11-12',
+  volatile: true,
+  volatileReason: 'Fees, schedules, session format, and assessment rules can change; confirm current details with SRTC.'
+};
+
+const securities = window.NEZHA_CONTENT.securities;
+Object.assign(securities, securitiesMetadata);
+securities.topics.forEach((topic) => {
+  topic.facts.forEach((fact) => {
+    Object.assign(fact, securitiesMetadata);
+  });
+});

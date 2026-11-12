@@ -2,7 +2,7 @@
 
 **Status:** Phase 0 and Phase 1A implemented. Phase 1A acceptance checks pass; assessment banks are split by phase; app renamed NeZha; expert content review remains pending.
 **Date:** 2026-11-08
-**Repo:** `/Users/tomphan/Documents/OPENCODE/NeZha`
+**Repo:** NeZha repository root
 
 ## 1. Product decisions
 
